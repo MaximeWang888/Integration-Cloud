@@ -1,0 +1,6 @@
+org\efrei\Entity\User.class
+org\efrei\UserManagementController.class
+org\efrei\UserManagementService.class
+org\efrei\Main.class
+org\efrei\DAO\IUserDAO.class
+org\efrei\DAO\UserDAO.class
