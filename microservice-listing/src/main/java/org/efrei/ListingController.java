@@ -1,7 +1,6 @@
 package org.efrei;
 
 import org.efrei.Entity.Listing;
-import org.efrei.ListingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,5 +26,10 @@ public class ListingController {
     @GetMapping("/search/filter")
     public List<Listing> filterListings(@RequestParam String type, @RequestParam String location, @RequestParam int minPrice) {
         return listingService.filterListings(type, location, minPrice);
+    }
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "Listing service is running correctly !";
     }
 }
