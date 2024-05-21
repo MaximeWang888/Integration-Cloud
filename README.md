@@ -35,9 +35,10 @@ Le projet est divisé en plusieurs microservices :
 
 Avant d'installer et d'exécuter le projet, assurez-vous d'avoir les éléments suivants installés sur votre machine :
 
-- [Java 11+](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html)
+- [Java 17+](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)
 - [Maven 3.6+](https://maven.apache.org/download.cgi)
-- [Docker](https://www.docker.com/products/docker-desktop) (optionnel pour exécuter les services dans des conteneurs)
+- [Docker](https://www.docker.com/products/docker-desktop) (pour exécuter les services dans des conteneurs)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Installation
 
@@ -54,15 +55,20 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
     mvn clean install
     ```
 
-3. Lancez chaque microservice individuellement. Par exemple, pour le microservice d'authentification :
+3. Utilisez Docker Compose pour lancer tous les microservices :
     ```bash
-    cd microservice-authentification
-    mvn spring-boot:run
+    docker-compose up --build
     ```
 
 ## Usage
 
-Une fois les microservices démarrés, vous pouvez accéder aux différentes fonctionnalités via leurs endpoints respectifs. Par exemple, les endpoints d'authentification pourraient être accessibles sur `http://localhost:8080`.
+Une fois les microservices démarrés, vous pouvez accéder aux différentes fonctionnalités via leurs endpoints respectifs :
+
+- Authentification : `http://localhost:8081`
+- Réservation : `http://localhost:8082`
+- Annonces : `http://localhost:8083`
+- Suivi : `http://localhost:8084`
+- Gestion des utilisateurs : `http://localhost:8085`
 
 ## Configuration
 
@@ -83,3 +89,6 @@ Ce projet est sous licence MIT. Consultez le fichier [LICENSE](LICENSE) pour plu
 ## Remerciements
 
 Merci à tous ceux qui ont contribué à ce projet.
+
+
+Ajoutez ce contenu à votre fichier `README.md` pour refléter les dernières modifications et inclure les instructions pour exécuter les microservices via Docker Compose.
