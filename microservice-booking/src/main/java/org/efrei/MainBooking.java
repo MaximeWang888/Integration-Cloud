@@ -12,7 +12,7 @@ public class MainBooking {
         SpringApplication.run(MainBooking.class, args);
     }
 
-    @GetMapping("/hello")
+    @GetMapping("/hello1")
     public String sayHello() {
         return "Hello, World!";
     }

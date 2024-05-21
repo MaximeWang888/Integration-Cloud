@@ -1,5 +1,0 @@
-spring:
-  application:
-    name: microservice-authentification
-server:
-  port: 8085

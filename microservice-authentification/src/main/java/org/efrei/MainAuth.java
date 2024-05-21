@@ -12,7 +12,7 @@ public class MainAuth {
         SpringApplication.run(MainAuth.class, args);
     }
 
-    @GetMapping("/hello4")
+    @GetMapping("/hello0")
     public String sayHello() {
         return "Hello, World!";
     }

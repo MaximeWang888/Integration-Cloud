@@ -1,14 +1,27 @@
-# Utiliser l'image de base officielle OpenJDK
-FROM openjdk:17-jdk-slim
-
-# Définir le répertoire de travail dans le conteneur
+# Étape 1 : Construire le projet avec Maven
+FROM maven:3.8.1-openjdk-17-slim AS build
 WORKDIR /app
 
-# Copier le fichier JAR de l'application dans le conteneur
-COPY target/microservice-management-0.0.1-SNAPSHOT.jar /app/microservice-management-0.0.1-SNAPSHOT.jar
+# Copier les fichiers pom.xml et src dans l'image
+COPY pom.xml .
+COPY src ./src
 
-# Exposer le port que l'application utilisera
-EXPOSE 8081
+# Télécharger les dépendances et construire le projet
+RUN mvn clean package -DskipTests
+RUN mvn dependency:copy-dependencies package -DskipTests
 
-# Démarrer l'application
-ENTRYPOINT ["java", "-jar", "microservice-management-0.0.1-SNAPSHOT.jar"]
+# Étape 2 : Exécuter l'application avec Java
+FROM openjdk:17-jdk-slim
+WORKDIR /app
+
+# Copier les dépendances du projet Maven depuis l'étape de build
+COPY --from=build /app/target/dependency/ ./
+
+# Copier le JAR généré par Maven depuis l'étape précédente
+COPY --from=build /app/target/microservice-authentification-0.0.1-SNAPSHOT.jar ./app.jar
+
+# Exposer le port sur lequel l'application sera exécutée
+EXPOSE 8080
+
+# Définir le point d'entrée pour exécuter l'application Spring Boot
+ENTRYPOINT ["java", "-jar", "app.jar"]

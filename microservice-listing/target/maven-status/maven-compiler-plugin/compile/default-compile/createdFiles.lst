@@ -1,6 +1,0 @@
-org\efrei\ListingService.class
-org\efrei\DAO\ListingDAO.class
-org\efrei\Main.class
-org\efrei\DAO\IListingDAO.class
-org\efrei\Entity\Listing.class
-org\efrei\ListingController.class
