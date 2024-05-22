@@ -1,9 +1,12 @@
-package org.efrei.entity;
+package org.efrei.Entity;
+
+import org.efrei.Entity.Status;
 
 import javax.persistence.*;
 import java.util.Date;
 
 @Entity
+@Table(name = "bookings")
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -16,6 +16,11 @@ public class ListingController {
         return ResponseEntity.ok(listingService.createListing(listing));
     }
 
+    @GetMapping("/title/{title}")
+    public ResponseEntity<Listing> getListingByTitle(@PathVariable String title) {
+        return ResponseEntity.ok(listingService.getListingByTitle(title));
+    }
+
     @GetMapping("/{listingId}")
     public ResponseEntity<Listing> getListing(@PathVariable Long listingId) {
         return ResponseEntity.ok(listingService.getListing(listingId));

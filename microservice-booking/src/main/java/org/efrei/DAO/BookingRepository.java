@@ -1,6 +1,6 @@
 package org.efrei.DAO;
 
-import org.efrei.entity.Booking;
+import org.efrei.Entity.Booking;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

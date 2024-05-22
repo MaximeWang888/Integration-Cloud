@@ -1,8 +1,8 @@
 package org.efrei;
 
 import org.efrei.DAO.BookingRepository;
-import org.efrei.entity.Booking;
-import org.efrei.entity.Status;
+import org.efrei.Entity.Booking;
+import org.efrei.Entity.Status;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

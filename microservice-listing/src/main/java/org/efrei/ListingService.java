@@ -17,7 +17,9 @@ public class ListingService {
     public Listing getListing(Long listingId) {
         return listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Listing not found"));
     }
-
+    public Listing getListingByTitle(String title) {
+        return listingRepository.findByTitle(title);
+    }
     public Listing updateListing(Long listingId, Listing listing) {
         if (!listingRepository.existsById(listingId)) {
             throw new RuntimeException("Listing not found");
