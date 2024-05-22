@@ -1,8 +1,11 @@
-package org.efrei.entity;
+package org.efrei.Entity;
+
+import org.efrei.Entity.Role;
 
 import javax.persistence.*;
 
 @Entity
+@Table(name = "users")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

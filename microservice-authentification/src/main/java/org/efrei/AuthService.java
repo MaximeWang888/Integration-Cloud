@@ -1,8 +1,8 @@
 package org.efrei;
 
 import org.efrei.DAO.UserRepository;
-import org.efrei.entity.Role;
-import org.efrei.entity.User;
+import org.efrei.Entity.Role;
+import org.efrei.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +18,7 @@ public class AuthService {
 
     public User login(String username, String password) {
         User user = userRepository.findByUsername(username);
+        System.out.println("User"+ user);
         if (user != null && user.getPassword().equals(password)) {
             return user;
         }

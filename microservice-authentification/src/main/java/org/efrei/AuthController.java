@@ -1,6 +1,6 @@
 package org.efrei;
 
-import org.efrei.entity.User;
+import org.efrei.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
