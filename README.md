@@ -55,16 +55,12 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
     mvn clean install
     ```
 
-[//]: # (3. Pas de manuellement, utilisez Docker Compose pour lancer tous les microservices &#40;Faites le si vous avez assez de CPU sinon étape 4.&#41;:)
-3. Utilisez Docker Compose pour lancer la base de donnée
-
+3. Utilisez Docker Compose pour lancer la base de donnée:
     ```bash
-
     docker-compose up --build
-
     ```
    
-4.  Manuellement, lancez chaque main de chaque microservice pour lancer tous les microservices, en commançant par le microservice-eureka
+5.  Manuellement, lancez chaque main de chaque microservice pour lancer tous les microservices, en commançant par le microservice-eureka
 
 ## Usage
 
