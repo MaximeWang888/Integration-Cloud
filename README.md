@@ -29,7 +29,7 @@ Le projet est divisé en plusieurs microservices :
 - **microservice-tracking** : Gère le suivi des activités et des événements.
 - **microservice-user_management** : Gère les informations et les profils des utilisateurs.
 
-<img width="589" alt="image" src="https://github.com/Fandresena02/MicroserviceAirBnB/assets/115694912/95c70765-a6be-4a08-b46d-eb41a3a2db8b">
+![Clone Airbnb's Architecture](https://github.com/Fandresena02/MicroserviceAirBnB/assets/75336673/c65caa54-8592-4f1d-8b4b-7a1f26c9df8d)
 
 ## Prérequis
 
