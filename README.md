@@ -55,10 +55,12 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
     mvn clean install
     ```
 
-3. Utilisez Docker Compose pour lancer tous les microservices :
+3. Pas de manuellement, utilisez Docker Compose pour lancer tous les microservices (Faites le si vous avez assez de CPU sinon étape 4.):
     ```bash
     docker-compose up --build
     ```
+   
+4.  Manuellement, lancez chaque main de chaque microservice pour lancer tous les microservices
 
 ## Usage
 
@@ -69,6 +71,15 @@ Une fois les microservices démarrés, vous pouvez accéder aux différentes fon
 - Annonces : `http://localhost:8083`
 - Suivi : `http://localhost:8084`
 - Gestion des utilisateurs : `http://localhost:8085`
+
+Pour vérifier si tout les microservices sont en service, lancez les commandes suivantes sur un terminal :
+   ```bash
+   curl http://localhost:8081/ping
+   curl http://localhost:8082/ping
+   curl http://localhost:8083/ping
+   curl http://localhost:8084/ping
+   curl http://localhost:8085/ping
+   ```
 
 ## Configuration
 
