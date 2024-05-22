@@ -1,0 +1,3 @@
+INSERT INTO listings (user_id, title, description, price, location, type) VALUES
+                                                                              (1, 'Cozy Apartment', 'A nice and cozy apartment.', 100.00, 'City Center', 'Apartment'),
+                                                                              (1, 'Luxury Villa', 'A luxurious villa with pool.', 500.00, 'Beachside', 'Villa');

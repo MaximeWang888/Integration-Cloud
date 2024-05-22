@@ -1,31 +1,35 @@
 package org.efrei;
 
-import org.efrei.Entity.Listing;
+import org.efrei.entity.Listing;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/listings")
 public class ListingController {
     @Autowired
     private ListingService listingService;
 
-    @GetMapping("/search/listings")
-    public List<Listing> searchListings(@RequestParam String location, @RequestParam String type, @RequestParam int budget) {
-        return listingService.searchListings(location, type, budget);
+    @PostMapping("/new")
+    public ResponseEntity<Listing> createListing(@RequestBody Listing listing) {
+        return ResponseEntity.ok(listingService.createListing(listing));
     }
 
-    @GetMapping("/search/listings/{listingId}")
-    public Listing getListingDetails(@RequestParam String listingId) {
-        return listingService.getListingDetails(listingId);
+    @GetMapping("/{listingId}")
+    public ResponseEntity<Listing> getListing(@PathVariable Long listingId) {
+        return ResponseEntity.ok(listingService.getListing(listingId));
     }
 
-    @GetMapping("/search/filter")
-    public List<Listing> filterListings(@RequestParam String type, @RequestParam String location, @RequestParam int minPrice) {
-        return listingService.filterListings(type, location, minPrice);
+    @PutMapping("/{listingId}/update")
+    public ResponseEntity<Listing> updateListing(@PathVariable Long listingId, @RequestBody Listing listing) {
+        return ResponseEntity.ok(listingService.updateListing(listingId, listing));
+    }
+
+    @DeleteMapping("/{listingId}/remove")
+    public ResponseEntity<Void> removeListing(@PathVariable Long listingId) {
+        listingService.removeListing(listingId);
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/ping")

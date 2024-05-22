@@ -1,30 +1,32 @@
 package org.efrei;
 
-import org.efrei.DAO.ListingDAO;
-import org.efrei.Entity.Listing;
+import org.efrei.DAO.ListingRepository;
+import org.efrei.entity.Listing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class ListingService {
-
     @Autowired
-    private ListingDAO listingDAO;
+    private ListingRepository listingRepository;
 
-    public List<Listing> searchListings(String location, String type, int budget) {
-        // Implémentation de la logique métier
-        return List.of();
+    public Listing createListing(Listing listing) {
+        return listingRepository.save(listing);
     }
 
-    public Listing getListingDetails(String listingId) {
-        // Implémentation de la logique métier
-        return null;
+    public Listing getListing(Long listingId) {
+        return listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Listing not found"));
     }
 
-    public List<Listing> filterListings(String type, String location, int minPrice) {
-        // Implémentation de la logique métier
-        return List.of();
+    public Listing updateListing(Long listingId, Listing listing) {
+        if (!listingRepository.existsById(listingId)) {
+            throw new RuntimeException("Listing not found");
+        }
+        listing.setId(listingId);
+        return listingRepository.save(listing);
+    }
+
+    public void removeListing(Long listingId) {
+        listingRepository.deleteById(listingId);
     }
 }

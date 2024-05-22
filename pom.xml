@@ -14,6 +14,7 @@
         <module>microservice-booking</module>
         <module>microservice-tracking</module>
         <module>microservice-listing</module>
+        <module>microservice-eureka</module>
     </modules>
 
     <properties>
@@ -45,7 +46,7 @@
                             <goal>repackage</goal>
                         </goals>
                         <configuration>
-                            <mainClass>org.efrei.MainListing</mainClass>
+                            <mainClass>org.efrei.ListingServiceApplication</mainClass>
                         </configuration>
                     </execution>
                 </executions>

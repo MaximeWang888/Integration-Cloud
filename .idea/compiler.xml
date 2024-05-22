@@ -9,9 +9,10 @@
         <module name="microservice-user_management" />
         <module name="microservice-booking" />
         <module name="microservice-authentification" />
+        <module name="microservice-management" />
+        <module name="microservice-eureka" />
         <module name="microservice-listing" />
         <module name="microservice-tracking" />
-        <module name="microservice-management" />
       </profile>
     </annotationProcessing>
   </component>
@@ -19,6 +20,7 @@
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="microservice-authentification" options="-parameters" />
       <module name="microservice-booking" options="-parameters" />
+      <module name="microservice-eureka" options="-parameters" />
       <module name="microservice-listing" options="-parameters" />
       <module name="microservice-management" options="-parameters" />
       <module name="microservice-tracking" options="-parameters" />
