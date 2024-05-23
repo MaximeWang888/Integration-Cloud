@@ -22,17 +22,17 @@ public class ListingController {
     }
 
     @GetMapping("/{listingId}")
-    public ResponseEntity<Listing> getListing(@PathVariable Long listingId) {
+    public ResponseEntity<Listing> getListing(@PathVariable Integer listingId) {
         return ResponseEntity.ok(listingService.getListing(listingId));
     }
 
     @PutMapping("/{listingId}/update")
-    public ResponseEntity<Listing> updateListing(@PathVariable Long listingId, @RequestBody Listing listing) {
+    public ResponseEntity<Listing> updateListing(@PathVariable Integer listingId, @RequestBody Listing listing) {
         return ResponseEntity.ok(listingService.updateListing(listingId, listing));
     }
 
     @DeleteMapping("/{listingId}/remove")
-    public ResponseEntity<Void> removeListing(@PathVariable Long listingId) {
+    public ResponseEntity<Void> removeListing(@PathVariable Integer listingId) {
         listingService.removeListing(listingId);
         return ResponseEntity.ok().build();
     }

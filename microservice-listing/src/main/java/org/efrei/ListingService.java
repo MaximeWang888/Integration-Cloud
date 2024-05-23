@@ -14,13 +14,13 @@ public class ListingService {
         return listingRepository.save(listing);
     }
 
-    public Listing getListing(Long listingId) {
+    public Listing getListing(Integer listingId) {
         return listingRepository.findById(listingId).orElseThrow(() -> new RuntimeException("Listing not found"));
     }
     public Listing getListingByTitle(String title) {
         return listingRepository.findByTitle(title);
     }
-    public Listing updateListing(Long listingId, Listing listing) {
+    public Listing updateListing(Integer listingId, Listing listing) {
         if (!listingRepository.existsById(listingId)) {
             throw new RuntimeException("Listing not found");
         }
@@ -28,7 +28,7 @@ public class ListingService {
         return listingRepository.save(listing);
     }
 
-    public void removeListing(Long listingId) {
+    public void removeListing(Integer listingId) {
         listingRepository.deleteById(listingId);
     }
 }
