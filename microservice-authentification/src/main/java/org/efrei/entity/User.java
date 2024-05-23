@@ -1,7 +1,5 @@
 package org.efrei.Entity;
 
-import org.efrei.Entity.Role;
-
 import javax.persistence.*;
 
 @Entity
@@ -15,12 +13,18 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    // getters and setters
-
     public String getPassword() {
         return password;
     }
-
+    public String getUsername() {
+        return username;
+    }
+    public Long getId() {
+        return id;
+    }
+    public Role getRole() {
+        return role;
+    }
     public void setRole(Role role) {
         this.role = role;
     }
