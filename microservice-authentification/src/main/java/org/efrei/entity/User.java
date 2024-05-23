@@ -12,7 +12,14 @@ public class User {
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
+    private Boolean isConnected;
 
+    public Boolean getIsConnected() {
+        return isConnected;
+    }
+    public void setIsConnected(Boolean connected) {
+        isConnected = connected;
+    }
     public String getPassword() {
         return password;
     }
@@ -28,5 +35,6 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
     }
+
 }
 

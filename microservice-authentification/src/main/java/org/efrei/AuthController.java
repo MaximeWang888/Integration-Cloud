@@ -21,6 +21,11 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(username, password));
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<User> logout(@RequestParam Long userId) {
+        return ResponseEntity.ok(authService.logout(userId));
+    }
+
     @GetMapping("/ping")
     public String ping() {
         return "Authentication service is running correctly!";

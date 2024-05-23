@@ -7,7 +7,6 @@ import java.util.List;
 
 public interface ListingRepository extends JpaRepository<Listing, Integer> {
     List<Listing> findByAvailability(Boolean availability);
-
     Listing findByTitle(String title);
 
 }
