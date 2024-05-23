@@ -1,12 +1,10 @@
-package org.efrei.entity;
+package org.efrei.Entity;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
+import javax.persistence.*;
 import java.security.Timestamp;
 
 @Entity
+@Table(name = "tracking")
 public class Tracking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,5 +13,35 @@ public class Tracking {
     private String status;
     private Timestamp timestamp;
 
-    // getters and setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getBookingId() {
+        return bookingId;
+    }
+
+    public void setBookingId(Long bookingId) {
+        this.bookingId = bookingId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
 }
