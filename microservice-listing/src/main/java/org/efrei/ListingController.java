@@ -1,8 +1,6 @@
 package org.efrei;
 
-import org.efrei.DAO.UserRepository;
-import org.efrei.Entity.Role;
-import org.efrei.Entity.User;
+import org.efrei.clients.AuthServiceClient;
 import org.efrei.entity.Listing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,16 +14,7 @@ public class ListingController {
     private ListingService listingService;
 
     @Autowired
-    private UserRepository userRepository;
-
-    private boolean isUserLoggedIn(Long userId) {
-        return userRepository.findById(userId).get().getIsConnected();
-    }
-
-    private boolean isProprietaire(Long userId) {
-        User user = userRepository.findById(userId).orElse(null);
-        return user != null && user.getRole() == Role.PROPRIETAIRE;
-    }
+    private AuthServiceClient authClient;
 
     @PostMapping("/new")
     public ResponseEntity<?> createListing(@RequestBody Listing listing) {
@@ -65,6 +54,11 @@ public class ListingController {
         }
         listingService.removeListing(listingId);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/checkConnection/{userId}")
+    public <userId> Boolean isUserLoggedIn(@PathVariable Long userId) {
+        return authClient.isUserLoggedIn(userId);
     }
 
     @GetMapping("/ping")
