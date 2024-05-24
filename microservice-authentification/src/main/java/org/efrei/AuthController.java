@@ -35,7 +35,7 @@ public class AuthController {
         return "Authentication service is running correctly!";
     }
 
-    @GetMapping("/ping/{userId}")
+    @GetMapping("/checkConnection/{userId}")
     public boolean isUserConnected(@PathVariable Long userId) {
         return userRepository.findById(userId).get().getIsConnected();
     }

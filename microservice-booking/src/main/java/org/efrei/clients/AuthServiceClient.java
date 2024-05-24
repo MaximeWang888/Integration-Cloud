@@ -7,6 +7,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @Service
 @FeignClient(name = "microservice-authentification")
 public interface AuthServiceClient {
-    @GetMapping("/auth/ping/{userId}")
+    @GetMapping("/auth/checkConnection/{userId}")
     Boolean isUserLoggedIn(@RequestParam("userId") Long token);
 }

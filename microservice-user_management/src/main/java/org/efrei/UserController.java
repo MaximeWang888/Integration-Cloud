@@ -39,7 +39,7 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/ping/{userId}")
+    @GetMapping("/checkConnection/{userId}")
     public <userId> Boolean isUserLoggedIn(@PathVariable Long userId) {
         return authClient.isUserLoggedIn(userId);
     }

@@ -8,6 +8,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 public interface AuthServiceClient {
     @GetMapping("/auth/ping/{token}")
     String ping(@RequestParam("token") String token);
-    @GetMapping("/auth/ping/{userId}")
+    @GetMapping("/auth/checkConnection/{userId}")
     Boolean isUserLoggedIn(@RequestParam("userId") Long token);
 }
