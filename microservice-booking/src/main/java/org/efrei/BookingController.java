@@ -1,6 +1,6 @@
 package org.efrei;
 
-import org.efrei.DAO.UserRepository;
+import org.efrei.clients.AuthServiceClient;
 import org.efrei.Entity.Booking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,16 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/bookings")
 public class BookingController {
-                        
     @Autowired
     private BookingService bookingService;
-
     @Autowired
-    private UserRepository userRepository;
-
-    private boolean isUserLoggedIn(Long userId) {
-        return userRepository.findById(userId).get().getIsConnected();
-    }
+    private AuthServiceClient authClient;
 
     @PostMapping("/new")
     public ResponseEntity<?> createBooking(@RequestParam Long userId, @RequestBody Booking booking) {
@@ -53,6 +47,10 @@ public class BookingController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/ping/{userId}")
+    public <userId> Boolean isUserLoggedIn(@PathVariable Long userId) {
+        return authClient.isUserLoggedIn(userId);
+    }
     @GetMapping("/ping")
     public String ping() {
         return "Booking service is running correctly!";

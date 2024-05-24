@@ -1,6 +1,6 @@
 package org.efrei;
 
-import org.efrei.DAO.UserRepository;
+import org.efrei.clients.AuthServiceClient;
 import org.efrei.entity.UserDetail;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -9,16 +9,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-
     @Autowired
     private UserService userService;
-
     @Autowired
-    private UserRepository userRepsitory;
-
-    private boolean isUserLoggedIn(Long userId) {
-        return userRepsitory.findById(userId).get().getIsConnected();
-    }
+    private AuthServiceClient authClient;
 
     @GetMapping("/{userId}")
     public ResponseEntity<?> getUserDetail(@PathVariable Long userId) {
@@ -45,9 +39,9 @@ public class UserController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/ping")
-    public String ping() {
-        return "User Management service is running correctly!";
+    @GetMapping("/ping/{userId}")
+    public <userId> Boolean isUserLoggedIn(@PathVariable Long userId) {
+        return authClient.isUserLoggedIn(userId);
     }
 
     @GetMapping("/pingAuthentification")

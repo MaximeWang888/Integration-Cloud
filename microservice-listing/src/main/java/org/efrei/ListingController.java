@@ -1,6 +1,8 @@
 package org.efrei;
 
 import org.efrei.DAO.UserRepository;
+import org.efrei.Entity.Role;
+import org.efrei.Entity.User;
 import org.efrei.entity.Listing;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +22,15 @@ public class ListingController {
         return userRepository.findById(userId).get().getIsConnected();
     }
 
+    private boolean isProprietaire(Long userId) {
+        User user = userRepository.findById(userId).orElse(null);
+        return user != null && user.getRole() == Role.PROPRIETAIRE;
+    }
+
     @PostMapping("/new")
-    public ResponseEntity<?> createListing(@RequestParam Long userId, @RequestBody Listing listing) {
-        if (!isUserLoggedIn(userId)) {
-            return ResponseEntity.status(401).body("User not logged in");
-        }
+    public ResponseEntity<?> createListing(@RequestBody Listing listing) {
+
+        System.out.println(listing);
         return ResponseEntity.ok(listingService.createListing(listing));
     }
 

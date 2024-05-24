@@ -1,7 +1,7 @@
 package org.efrei.Entity;
 
 import javax.persistence.*;
-import java.security.Timestamp;
+import java.sql.Timestamp;
 
 @Entity
 @Table(name = "tracking")

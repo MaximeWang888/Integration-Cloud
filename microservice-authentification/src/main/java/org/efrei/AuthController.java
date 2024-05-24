@@ -1,5 +1,6 @@
 package org.efrei;
 
+import org.efrei.DAO.UserRepository;
 import org.efrei.Entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     @Autowired
     private AuthService authService;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @PostMapping("/signup")
     public ResponseEntity<User> signup(@RequestBody User user) {
@@ -31,8 +35,8 @@ public class AuthController {
         return "Authentication service is running correctly!";
     }
 
-    @GetMapping("/ping/{token}")
-    public String ping(@PathVariable String token) {
-        return "Authentication service is running correctly! Token: " + token;
+    @GetMapping("/ping/{userId}")
+    public boolean isUserConnected(@PathVariable Long userId) {
+        return userRepository.findById(userId).get().getIsConnected();
     }
 }
