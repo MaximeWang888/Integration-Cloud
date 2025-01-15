@@ -46,8 +46,8 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
 
 1. Clonez le dépôt :
     ```bash
-    git clone https://github.com/Fandresena02/MicroserviceAirBnB.git
-    cd MicroserviceAirBnB
+    git clone https://github.com/MaximeWang888/Microservice-Airbnb.git
+    cd Microservice-Airbnb
     ```
 
 2. Construisez les microservices :
