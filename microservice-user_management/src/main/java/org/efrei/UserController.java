@@ -48,4 +48,9 @@ public class UserController {
     public String pingAuthentification() {
         return userService.ping();
     }
+
+    @GetMapping("/ping")
+    public String ping() {
+        return "User Management service is running correctly !";
+    }
 }

@@ -1,6 +1,6 @@
 package org.efrei.DAO;
 
-import org.efrei.Entity.Tracking;
+import org.efrei.entity.Tracking;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;

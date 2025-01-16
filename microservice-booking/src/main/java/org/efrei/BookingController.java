@@ -1,7 +1,7 @@
 package org.efrei;
 
 import org.efrei.clients.AuthServiceClient;
-import org.efrei.Entity.Booking;
+import org.efrei.entity.Booking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

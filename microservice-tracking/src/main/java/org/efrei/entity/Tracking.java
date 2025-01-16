@@ -1,4 +1,4 @@
-package org.efrei.Entity;
+package org.efrei.entity;
 
 import javax.persistence.*;
 import java.sql.Timestamp;

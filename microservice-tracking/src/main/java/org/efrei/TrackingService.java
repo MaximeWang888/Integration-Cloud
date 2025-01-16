@@ -1,7 +1,7 @@
 package org.efrei;
 
 import org.efrei.DAO.TrackingRepository;
-import org.efrei.Entity.Tracking;
+import org.efrei.entity.Tracking;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

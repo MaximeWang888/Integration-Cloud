@@ -39,6 +39,8 @@ Avant d'installer et d'exécuter le projet, assurez-vous d'avoir les éléments 
 - [Maven 3.6+](https://maven.apache.org/download.cgi)
 - [Docker](https://www.docker.com/products/docker-desktop) (pour exécuter les services dans des conteneurs)
 - [Docker Compose](https://docs.docker.com/compose/install/)
+- [Make](https://gnuwin32.sourceforge.net/packages/make.htm)
+ (pour lancer les commandes plus facilement)
 
 ## Installation
 
@@ -55,12 +57,15 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
     mvn clean install
     ```
 
-3. Utilisez Docker Compose pour lancer la base de donnée:
+3. Utilisez Docker Compose pour construire toutes les images de chaque microservices :
     ```bash
-    docker-compose up --build
+    make build profile=infra
     ```
    
-5.  Manuellement, lancez chaque main de chaque microservice pour lancer tous les microservices, en commançant par le microservice-eureka
+4.  Utilisez Docker Compose pour lancer tous les containers sous docker :
+    ```bash
+    make build profile=microservice
+    ```
 
 ## Usage
 
@@ -74,11 +79,11 @@ Une fois les microservices démarrés, vous pouvez accéder aux différentes fon
 
 Pour vérifier si tout les microservices sont en service, lancez les commandes suivantes sur un terminal :
    ```bash
-   curl http://localhost:8081/ping
-   curl http://localhost:8082/ping
-   curl http://localhost:8083/ping
-   curl http://localhost:8084/ping
-   curl http://localhost:8085/ping
+   curl http://localhost:8081/auth/ping
+   curl http://localhost:8082/bookings/ping
+   curl http://localhost:8083/listings/ping
+   curl http://localhost:8084/tracking/ping
+   curl http://localhost:8085/users/ping
    ```
 
 ## Configuration
@@ -92,10 +97,6 @@ Les contributions sont les bienvenues ! Veuillez soumettre des pull requests ou 
 ## Licence
 
 Ce projet est sous licence MIT. Consultez le fichier [LICENSE](LICENSE) pour plus de détails.
-
-## Auteurs
-
-- **Mohamad Reslan** - Développeur principal
 
 ## Remerciements
 
