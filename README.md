@@ -1,4 +1,4 @@
-# MicroserviceAirBnB
+# Microservice Airbnb
 
 Ce projet implémente une architecture de microservices pour une application de type Airbnb. Chaque microservice est responsable d'une partie spécifique du système global.
 
