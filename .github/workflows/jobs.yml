@@ -56,7 +56,7 @@ jobs:
           context: ./microservice-authentification
           file: ./microservice-authentification/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-authentification:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
 
       - name: Build and push Docker image for microservice-booking
         uses: docker/build-push-action@v4
@@ -64,7 +64,7 @@ jobs:
           context: ./microservice-booking
           file: ./microservice-booking/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-booking:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
 
       - name: Build and push Docker image for microservice-listing
         uses: docker/build-push-action@v4
@@ -72,7 +72,7 @@ jobs:
           context: ./microservice-listing
           file: ./microservice-listing/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-listing:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
 
       - name: Build and push Docker image for microservice-tracking
         uses: docker/build-push-action@v4
@@ -80,7 +80,7 @@ jobs:
           context: ./microservice-tracking
           file: ./microservice-tracking/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-tracking:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
 
       - name: Build and push Docker image for microservice-user-management
         uses: docker/build-push-action@v4
@@ -88,7 +88,7 @@ jobs:
           context: ./microservice-user_management
           file: ./microservice-user_management/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-user-management:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
 
   deploy:
     runs-on: ubuntu-latest
