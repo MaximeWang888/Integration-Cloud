@@ -50,6 +50,12 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
+      - name: Debug - List root directory
+        run: ls -l
+
+      - name: Debug - List authentification directory
+        run: ls -l ./microservice-authentification
+
       - name: Verify Docker image 
         run: docker images 
 
