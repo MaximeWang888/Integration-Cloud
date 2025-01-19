@@ -17,7 +17,7 @@ Ce projet implémente une architecture de microservices pour une application de 
 
 ## Introduction
 
-Le projet MicroserviceAirBnB vise à fournir une solution de réservation d'hébergements en utilisant une architecture de microservices. Chaque microservice est isolé et gère une partie spécifique du système, comme l'authentification, la réservation, la gestion des annonces, le suivi et la gestion des utilisateurs.
+Le projet MicroserviceAirBnB vise à fournir une solution de réservation d'hébergements en utilisant une architecture de microservices. Chaque microservice est isolé et gère une partie spécifique du système, comme l'authentification, la réservation, la gestion des annonces, le suivi et la gestion des utilisateurs. Ce projet est déployé sur un cluster **Kubernetes**, avec le **Horizontal Pod Autoscaler (HPA)** activé pour ajuster dynamiquement le nombre de pods en fonction de la charge des ressources, comme l'utilisation du CPU et de la mémoire. Cela permet une mise à l'échelle automatique pour mieux gérer les variations de trafic et optimiser les ressources.
 
 ## Architecture
 
@@ -31,6 +31,10 @@ Le projet est divisé en plusieurs microservices :
 
 ![Clone Airbnb's Architecture](https://github.com/Fandresena02/MicroserviceAirBnB/assets/75336673/c65caa54-8592-4f1d-8b4b-7a1f26c9df8d)
 
+Le projet s'aide de Docker pour construire les images et de Kubernetes pour déployer les images via les fichiers manifests (assurant également la scalabilité) :
+
+![Design Of The Build And Deployment Workflow](image-1.png)
+
 ## Prérequis
 
 Avant d'installer et d'exécuter le projet, assurez-vous d'avoir les éléments suivants installés sur votre machine :
@@ -38,6 +42,7 @@ Avant d'installer et d'exécuter le projet, assurez-vous d'avoir les éléments 
 - [Java 17+](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)
 - [Maven 3.6+](https://maven.apache.org/download.cgi)
 - [Docker](https://www.docker.com/products/docker-desktop) (pour exécuter les services dans des conteneurs)
+- Activer **Kubernetes** sur Docker Desktop
 - [Docker Compose](https://docs.docker.com/compose/install/)
 - [Make](https://gnuwin32.sourceforge.net/packages/make.htm)
  (pour lancer les commandes plus facilement)
@@ -57,15 +62,23 @@ Pour installer et exécuter ce projet localement, suivez ces étapes :
     mvn clean install
     ```
 
-3. Utilisez Docker Compose pour construire toutes les images de chaque microservices :
+3. Utilisez Docker Compose pour construire toutes les images :
     ```bash
     make build profile=infra
-    ```
-   
-4.  Utilisez Docker Compose pour lancer tous les containers sous docker :
-    ```bash
     make build profile=microservice
     ```
+   
+4.  Utilisez Kubernetes pour déploiement tous les containers docker :
+    ```bash
+    make up-infra-k8s
+    make up-microservices-k8s
+    ```
+
+5.  Utilisez Kubernetes pour port-forward tous les microservices en local :
+    ```bash
+    make up-port-forward-all
+    ```
+
 
 ## Usage
 

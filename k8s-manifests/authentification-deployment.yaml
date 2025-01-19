@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: authentification
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: authentification
+  template:
+    metadata:
+      labels:
+        app: authentification
+    spec:
+      containers:
+        - name: authentification
+          image: microservice-airbnb-authentification:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8081
+          resources:
+            requests:
+              cpu: "200m"         
+              memory: "256Mi"     
+            limits:
+              cpu: "500m"         
+              memory: "512Mi" 
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authentification
+spec:
+  selector:
+    app: authentification
+  ports:
+    - protocol: TCP
+      port: 8081
+      targetPort: 8081
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: authentification-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: authentification
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 60
