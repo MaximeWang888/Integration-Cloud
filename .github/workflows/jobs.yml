@@ -44,20 +44,17 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
       - name: Checkout code
         uses: actions/checkout@v3
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
-
-      - name: Debug - List root directory
-        run: ls -l
-
-      - name: Debug - List authentification directory
-        run: ls -l ./microservice-authentification
-
-      - name: Verify Docker image 
-        run: docker images 
 
       - name: Build and push Docker image for microservice-authentification
         uses: docker/build-push-action@v4
