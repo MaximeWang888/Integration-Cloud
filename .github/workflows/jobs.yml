@@ -50,13 +50,16 @@ jobs:
       - name: Set up Docker
         uses: docker/setup-buildx-action@v2
 
+      - name: Verify Docker image 
+        run: docker images 
+
       - name: Build and push Docker image for microservice-authentification
         uses: docker/build-push-action@v4
         with:
           context: ./microservice-authentification
           file: ./microservice-authentification/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/authentification:latest
 
       - name: Build and push Docker image for microservice-booking
         uses: docker/build-push-action@v4
@@ -64,7 +67,7 @@ jobs:
           context: ./microservice-booking
           file: ./microservice-booking/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/booking:latest
 
       - name: Build and push Docker image for microservice-listing
         uses: docker/build-push-action@v4
@@ -72,7 +75,7 @@ jobs:
           context: ./microservice-listing
           file: ./microservice-listing/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/listing:latest
 
       - name: Build and push Docker image for microservice-tracking
         uses: docker/build-push-action@v4
@@ -80,7 +83,7 @@ jobs:
           context: ./microservice-tracking
           file: ./microservice-tracking/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/tracking:latest
 
       - name: Build and push Docker image for microservice-user-management
         uses: docker/build-push-action@v4
@@ -88,7 +91,7 @@ jobs:
           context: ./microservice-user_management
           file: ./microservice-user_management/Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/user-management:latest
 
   deploy:
     runs-on: ubuntu-latest
