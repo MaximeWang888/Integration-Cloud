@@ -33,7 +33,8 @@ Le projet est divisé en plusieurs microservices :
 
 Le projet s'aide de Docker pour construire les images et de Kubernetes pour déployer les images via les fichiers manifests (assurant également la scalabilité) :
 
-![Design Of The Build And Deployment Workflow](image-1.png)
+![Design Of The Build And Deployment Workflow](https://github.com/user-attachments/assets/e6c74523-39f1-491b-8247-b43c9e1ff74b)
+
 
 ## Prérequis
 
