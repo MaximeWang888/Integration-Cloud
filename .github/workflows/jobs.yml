@@ -111,6 +111,9 @@ jobs:
       - name: Start Minikube
         run: minikube start --driver=docker
 
+      - name: Verify Minikube Status
+        run: minikube status
+
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
