@@ -141,6 +141,9 @@ jobs:
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
 
+      - name: Verify Kubernetes Service
+        run: kubectl get svc -A
+
       - name: Port-Forward Services
         run: |
           nohup kubectl port-forward svc/authentification 8081:8081 &
