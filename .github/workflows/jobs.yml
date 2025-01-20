@@ -143,6 +143,16 @@ jobs:
     runs-on: ubuntu-22.04
     needs: deploy
     steps:
+      - name: Verify Minikube Status
+        run: |
+          minikube status
+          kubectl cluster-info
+      - name: Configure kubeconfig for Minikube
+        run: |
+          kubectl config use-context minikube
+      - name: Wait for All Pods to Be Ready
+        run: |
+          kubectl wait --for=condition=ready pod --all --namespace=default --timeout=300s
       - name: Port-Forward Services
         run: |
           nohup kubectl port-forward svc/authentification 8081:8081 &
