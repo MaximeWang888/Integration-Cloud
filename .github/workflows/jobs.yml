@@ -109,7 +109,7 @@ jobs:
           sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
       - name: Start Minikube
-        run: minikube start --driver=docker
+        run: minikube start --driver=docker || minikube start --driver=none
 
       - name: Verify Minikube Status
         run: minikube status
