@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout code
@@ -24,7 +24,7 @@ jobs:
         run: mvn clean install -DskipTests
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - name: Checkout code
@@ -41,7 +41,7 @@ jobs:
         run: mvn test
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: test
     steps:
       - name: Log in to Docker Hub
@@ -97,7 +97,7 @@ jobs:
           tags: ${{ secrets.DOCKER_USERNAME }}/user-management:latest
 
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: docker
     steps:
       - name: Checkout code
