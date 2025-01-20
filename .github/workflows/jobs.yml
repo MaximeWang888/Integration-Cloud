@@ -103,11 +103,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Kind
-        uses: helm/kind-action@v1.6.0
-        with:
-          cluster_name: kind
-          wait: true
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+      - name: Start Minikube
+        run: minikube start --driver=docker
+
+      - name: Use Minikube Docker Daemon
+        run: eval $(minikube docker-env)
 
       - name: Build Docker images
         run: |
@@ -118,14 +123,14 @@ jobs:
           docker build -t tracking:latest ./microservice-tracking
           docker build -t management:latest ./microservice-user_management
 
-      - name: Load Docker images into Kind
+      - name: Load Images into Minikube
         run: |
-          kind load docker-image authentification:latest --name kind
-          kind load docker-image booking:latest --name kind
-          kind load docker-image listing:latest --name kind
-          kind load docker-image eureka:latest --name kind
-          kind load docker-image tracking:latest --name kind
-          kind load docker-image management:latest --name kind
+          minikube image load authentification:latest
+          minikube image load booking:latest
+          minikube image load listing:latest
+          minikube image load eureka:latest
+          minikube image load tracking:latest
+          minikube image load management:latest
 
       - name: Apply Kubernetes manifests
         run: kubectl apply -f ./k8s-manifests
