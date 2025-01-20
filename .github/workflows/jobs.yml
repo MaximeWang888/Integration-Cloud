@@ -119,7 +119,7 @@ jobs:
           docker build -t authentification:latest ./microservice-authentification
           docker build -t booking:latest ./microservice-booking
           docker build -t listing:latest ./microservice-listing
-          docker build -t eureka:latest ./microservice-euraka
+          docker build -t eureka:latest ./microservice-eureka
           docker build -t tracking:latest ./microservice-tracking
           docker build -t management:latest ./microservice-user_management
 
