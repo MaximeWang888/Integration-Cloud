@@ -103,18 +103,32 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Set up Kubeconfig
-        uses: azure/setup-kubeconfig@v1
+      - name: Set up Kind
+        uses: helm/kind-action@v1.6.0
         with:
-          kubeconfig: ${{ secrets.KUBECONFIG }}
+          cluster_name: kind
+          wait: true
+
+      - name: Build Docker images
+        run: |
+          docker build -t authentification:latest ./microservice-authentification
+          docker build -t booking:latest ./microservice-booking
+          docker build -t listing:latest ./microservice-listing
+          docker build -t eureka:latest ./microservice-euraka
+          docker build -t tracking:latest ./microservice-tracking
+          docker build -t management:latest ./microservice-user_management
+
+      - name: Load Docker images into Kind
+        run: |
+          kind load docker-image authentification:latest --name kind
+          kind load docker-image booking:latest --name kind
+          kind load docker-image listing:latest --name kind
+          kind load docker-image eureka:latest --name kind
+          kind load docker-image tracking:latest --name kind
+          kind load docker-image management:latest --name kind
 
       - name: Apply Kubernetes manifests
         run: kubectl apply -f ./k8s-manifests
 
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl set image deployment/authentification authentification=${{ secrets.DOCKER_USERNAME }}/microservice-authentification:latest
-          kubectl set image deployment/booking booking=${{ secrets.DOCKER_USERNAME }}/microservice-booking:latest
-          kubectl set image deployment/listing listing=${{ secrets.DOCKER_USERNAME }}/microservice-listing:latest
-          kubectl set image deployment/tracking tracking=${{ secrets.DOCKER_USERNAME }}/microservice-tracking:latest
-          kubectl set image deployment/user-management user-management=${{ secrets.DOCKER_USERNAME }}/microservice-user-management:latest
+      - name: Verify Kubernetes Pods
+        run: kubectl get pods -A
