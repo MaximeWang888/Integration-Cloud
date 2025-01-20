@@ -137,3 +137,24 @@ jobs:
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
+
+
+  port-forward-and-test:
+    runs-on: ubuntu-22.04
+    needs: deploy
+    steps:
+      - name: Port-Forward Services
+        run: |
+          nohup kubectl port-forward svc/authentification 8081:8081 &
+          nohup kubectl port-forward svc/booking 8082:8082 &
+          nohup kubectl port-forward svc/listing 8083:8083 &
+          nohup kubectl port-forward svc/tracking 8084:8084 &
+          nohup kubectl port-forward svc/user-management 8085:8085 &
+          sleep 10 # Wait for port forwarding to be ready
+      - name: Test /ping Endpoints
+        run: |
+          curl http://localhost:8081/auth/ping
+          curl http://localhost:8082/bookings/ping
+          curl http://localhost:8083/listings/ping
+          curl http://localhost:8084/tracking/ping
+          curl http://localhost:8085/users/ping
