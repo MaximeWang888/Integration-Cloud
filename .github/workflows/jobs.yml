@@ -132,6 +132,9 @@ jobs:
       - name: Wait 2 minutes for Pods to be Ready
         run: sleep 120
 
+      - name: Check Logs of Database Pod
+        run: kubectl get pod -l app=database -o jsonpath="{.items[0].metadata.name}"
+
       - name: Check Logs for All Pods
         run: |
           for pod in $(kubectl get pods -o name); do
