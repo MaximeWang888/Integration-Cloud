@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: database
-          image: microservice-airbnb-database:latest
+          image: 888maximewang/microservice-airbnb-database:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 3306

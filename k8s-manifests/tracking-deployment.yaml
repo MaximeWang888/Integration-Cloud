@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: tracking
-          image: microservice-airbnb-tracking:latest
+          image: 888maximewang/microservice-airbnb-tracking:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8084

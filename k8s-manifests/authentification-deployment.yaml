@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: authentification
-          image: microservice-airbnb-authentification:latest
+          image: 888maximewang/microservice-airbnb-authentification:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8081

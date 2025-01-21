@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: user-management
-          image: microservice-airbnb-user_management:latest
+          image: 888maximewang/microservice-airbnb-user_management:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8085

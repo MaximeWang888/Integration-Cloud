@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: listing
-          image: microservice-airbnb-listing:latest
+          image: 888maximewang/microservice-airbnb-listing:latest
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8083
