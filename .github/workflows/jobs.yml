@@ -63,7 +63,7 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest ./microservice-user_management
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./microservice-user_management
 
       - name: Push Docker images to registry
@@ -73,7 +73,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
 
   deploy:
@@ -104,7 +104,7 @@ jobs:
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
           minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
 
