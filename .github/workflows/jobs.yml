@@ -104,6 +104,7 @@ jobs:
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
 
       - name: Check images loaded on minikube
         run: minikube image ls
