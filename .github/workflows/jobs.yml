@@ -111,6 +111,12 @@ jobs:
       - name: Check images loaded on minikube
         run: minikube image ls
 
+      - name: Apply Kubernetes Database manifest
+        run: kubectl apply -f ./k8s-manifests/database-deployment.yaml
+
+      - name: Wait 60 seconds for Database Pod to be Ready
+        run: sleep 60
+
       - name: Apply Kubernetes manifests
         run: kubectl apply -f ./k8s-manifests
 
