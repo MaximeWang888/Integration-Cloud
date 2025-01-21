@@ -140,7 +140,7 @@ jobs:
           POD_NAME=$(kubectl get pods -l app=database -o jsonpath='{.items[0].metadata.name}')
           echo "Fetching logs for Pod: $POD_NAME"
           echo "========== POD LOGS =========="
-          kubectl logs $POD_NAME
+          kubectl logs $POD_NAME --previous || echo "No previous logs available."
 
       - name: Check Logs for All Pods
         run: |
