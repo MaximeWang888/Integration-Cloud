@@ -135,6 +135,13 @@ jobs:
       - name: Describe Database Pod
         run: kubectl describe pod $(kubectl get pods -l app=database -o jsonpath="{.items[0].metadata.name}")
 
+      - name: Fetch and Echo Pod Logs
+        run: |
+          POD_NAME=$(kubectl get pods -l app=database -o jsonpath='{.items[0].metadata.name}')
+          echo "Fetching logs for Pod: $POD_NAME"
+          echo "========== POD LOGS =========="
+          kubectl logs $POD_NAME
+
       - name: Check Logs for All Pods
         run: |
           for pod in $(kubectl get pods -o name); do
