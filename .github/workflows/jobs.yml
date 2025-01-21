@@ -147,10 +147,17 @@ jobs:
       - name: Wait for Pods to be Ready
         run: sleep 60
 
+      - name: Check Logs for All Pods
+        run: |
+          for pod in $(kubectl get pods -o name); do
+            echo "Logs for $pod:"
+            kubectl logs $pod
+          done
+
       - name: Port-Forward Services
         run: |
-          nohup kubectl port-forward svc/authentification 8081:8081 &
-          nohup kubectl port-forward svc/booking 8082:8082 &
+          kubectl port-forward svc/authentification 8081:8081 &
+          kubectl port-forward svc/booking 8082:8082 &
           nohup kubectl port-forward svc/listing 8083:8083 &
           nohup kubectl port-forward svc/tracking 8084:8084 &
           nohup kubectl port-forward svc/user-management 8085:8085 &
