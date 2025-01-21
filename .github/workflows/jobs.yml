@@ -110,16 +110,16 @@ jobs:
       - name: Apply Kubernetes manifests with dynamic image names
         run: |
           # Replace the placeholders in the deployment YAML dynamically
-          sed -e "s/***\/microservice-airbnb-authentification/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-authentification/g" \
-              -e "s/***\/microservice-airbnb-booking/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-booking/g" \
-              -e "s/***\/microservice-airbnb-listing/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-listing/g" \
-              -e "s/***\/microservice-airbnb-tracking/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-tracking/g" \
-              -e "s/***\/microservice-airbnb-user-management/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-user-management/g" \
-              -e "s/***\/microservice-airbnb-eureka/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-eureka/g" \
+          sed -e "s/\*\*\*\/microservice-airbnb-authentification/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-authentification/g" \
+              -e "s/\*\*\*\/microservice-airbnb-booking/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-booking/g" \
+              -e "s/\*\*\*\/microservice-airbnb-listing/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-listing/g" \
+              -e "s/\*\*\*\/microservice-airbnb-tracking/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-tracking/g" \
+              -e "s/\*\*\*\/microservice-airbnb-user-management/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-user-management/g" \
+              -e "s/\*\*\*\/microservice-airbnb-eureka/${{ secrets.DOCKER_USERNAME }}\/microservice-airbnb-eureka/g" \
               ./k8s-manifests/deployment.yaml > ./k8s-manifests/deployment-updated.yaml
 
           kubectl apply -f ./k8s-manifests/deployment-updated.yaml
-  
+      
       # - name: Apply Kubernetes manifests
         # run: kubectl apply -f ./k8s-manifests
 
