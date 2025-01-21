@@ -133,7 +133,7 @@ jobs:
         run: sleep 120
 
       - name: Check Logs of Database Pod
-        run: kubectl get pod -l app=database -o jsonpath="{.items[0].metadata.name}"
+        run: kubectl logs $(kubectl get pod -l app=database -o jsonpath="{.items[0].metadata.name}")
 
       - name: Check Logs for All Pods
         run: |
