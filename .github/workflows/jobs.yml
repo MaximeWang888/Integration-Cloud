@@ -111,8 +111,11 @@ jobs:
       - name: Check images loaded on minikube
         run: minikube image ls
 
-      - name: Apply Kubernetes Database manifest
-        run: kubectl apply -f ./k8s-manifests/database-deployment.yaml
+      - name: Apply Kubernetes Database, Eureka and Metric Server manifests
+        run: |
+          kubectl apply -f ./k8s-manifests/database-deployment.yaml
+          kubectl apply -f ./k8s-manifests/metrics-server-deployment.yaml
+          kubectl apply -f ./k8s-manifests/eureka-deployment.yaml
 
       - name: Wait 60 seconds for Database Pod to be Ready
         run: sleep 60
@@ -126,8 +129,8 @@ jobs:
       - name: Verify Kubernetes Service
         run: kubectl get svc -A
 
-      - name: Wait 60 seconds for Pods to be Ready
-        run: sleep 60
+      - name: Wait 2 minutes for Pods to be Ready
+        run: sleep 120
 
       - name: Check Logs for All Pods
         run: |
