@@ -58,21 +58,21 @@ jobs:
 
       - name: Build and tag Docker images
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/authentification:latest ./microservice-authentification
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/booking:latest ./microservice-booking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/listing:latest ./microservice-listing
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/eureka:latest ./microservice-eureka
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/tracking:latest ./microservice-tracking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/user-management:latest ./microservice-user_management
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest ./microservice-authentification
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest ./microservice-booking
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest ./microservice-user_management
 
       - name: Push Docker images to registry
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/authentification:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/booking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/listing:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/eureka:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/tracking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/user-management:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
 
   deploy:
     runs-on: ubuntu-22.04
@@ -97,12 +97,12 @@ jobs:
 
       - name: Load Docker images into Minikube
         run: |
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/authentification:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/booking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/listing:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/eureka:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/tracking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/user-management:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
 
       - name: Apply Kubernetes manifests
         run: kubectl apply -f ./k8s-manifests
