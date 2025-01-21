@@ -121,7 +121,11 @@ jobs:
         run: sleep 60
 
       - name: Apply Kubernetes manifests
-        run: kubectl apply -f ./k8s-manifests
+        run: |
+          kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
+          kubectl apply -f ./k8s-manifests/booking-deployment.yaml
+          kubectl apply -f ./k8s-manifests/listing-deployment.yaml
+          kubectl apply -f ./k8s-manifests/tracking-deployment.yaml
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
