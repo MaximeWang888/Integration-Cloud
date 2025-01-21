@@ -104,6 +104,9 @@ jobs:
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user-management:latest
 
+      - name: Check images loaded on minikube
+        run: minikube image ls
+
       - name: Apply Kubernetes manifests
         run: kubectl apply -f ./k8s-manifests
 
