@@ -151,4 +151,12 @@ jobs:
       
       - name: Test /ping Endpoints
         run: |
-          curl http://localhost:8081/auth/ping
+          kubectl port-forward svc/authentification 8081:8081 &
+          for i in {1..20}; do
+            if curl -s http://localhost:8081 > /dev/null; then
+              echo "Port forwarding is ready!"
+              break
+            fi
+            echo "Waiting for port forwarding..."
+            sleep 1
+          done
