@@ -104,7 +104,7 @@ jobs:
 
       - name: Wait 90 seconds for Database Pod to be Ready
         run: |
-          kubectl wait --for=condition=ready pod -l app=database --timeout=90s
+          kubectl wait --for=condition=ready pod --all --timeout=90s
 
       - name: Fetch and Echo Pod Logs
         run: |
