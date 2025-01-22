@@ -35,21 +35,13 @@ jobs:
       - name: Build and tag Docker images
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest ./microservice-authentification
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest ./microservice-booking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./database
 
       - name: Push Docker images to registry
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
 
   test:
@@ -156,6 +148,11 @@ jobs:
         run: |
           POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}')
           kubectl logs $POD_NAME -n kube-system
+
+      - name: Verify Kubernetes API Server Reachability
+        run: |
+          kubectl cluster-info
+          kubectl get pods -n kube-system -o wide    
 
       - name: Investigate Networking Issues
         run: kubectl run debug --rm -it --image=busybox --restart=Never -- nslookup kubernetes.default
