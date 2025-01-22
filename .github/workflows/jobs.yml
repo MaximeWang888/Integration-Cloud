@@ -39,7 +39,8 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./microservice-user_management
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./database
 
       - name: Push Docker images to registry
         run: |
@@ -48,6 +49,7 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
 
   test:
@@ -92,6 +94,7 @@ jobs:
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
           minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
 
@@ -123,6 +126,7 @@ jobs:
           kubectl apply -f ./k8s-manifests/booking-deployment.yaml
           kubectl apply -f ./k8s-manifests/listing-deployment.yaml
           kubectl apply -f ./k8s-manifests/tracking-deployment.yaml
+          kubectl apply -f ./k8s-manifests/user_management-deployment.yaml
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
