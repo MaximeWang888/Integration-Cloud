@@ -117,6 +117,15 @@ jobs:
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
 
+      - name: List Docker networks
+        run: docker network ls
+
+      - name: Inspect the network
+        run: docker network inspect minikube
+
+      - name: Ensure Docker is Running
+        run: sudo systemctl status docker
+
       - name: Inspect Minikube Logs
         run: minikube logs
 
