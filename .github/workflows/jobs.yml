@@ -126,6 +126,11 @@ jobs:
       - name: Ensure Docker is Running
         run: sudo systemctl status docker
 
+      - name: Check Docker DNS Configuration
+        run: |
+          CONTAINER_ID=$(docker ps -q --filter "name=minikube")
+          docker exec -it $CONTAINER_ID cat /etc/resolv.conf
+
       - name: Inspect Minikube Logs
         run: minikube logs
 
