@@ -160,23 +160,5 @@ jobs:
 
       - name: Test /ping Endpoints
         run: |
-          response=0 # Initialize the response variable
-          for i in {1..10}; do
-            echo "Checking http://localhost:8081/auth/ping..."
-            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/auth/ping)
-            if [ "$response" -eq 200 ]; then
-              echo "Port forwarding and service are ready!"
-              break
-            else
-              echo "Waiting for port forwarding or service readiness (HTTP $response)..."
-            fi
-            sleep 1
-          done
-          if [ "$response" -ne 200 ]; then
-            echo "Service did not become ready. Last HTTP status: $response"
-            exit 1
-          else
-            echo "Service is ready. Last HTTP status: $response"
-          fi
-
-
+          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec -it $POD_NAME -- curl -v http://localhost:8081/auth/ping
