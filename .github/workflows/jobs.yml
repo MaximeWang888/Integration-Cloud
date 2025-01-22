@@ -121,8 +121,9 @@ jobs:
 
       - name: Expose service in Minikube
         run: |
-          minikube service authentification --url &
-          export SERVICE_URL=$(minikube service authentification --url)
+          kubectl expose deployment authentification --type=NodePort --name=authentification-service
+          minikube service authentification-service --url &
+          export SERVICE_URL=$(minikube service authentification-service --url)
           echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
 
       - name: Get all pods 
@@ -146,4 +147,10 @@ jobs:
           echo "========== POD LOGS =========="
           kubectl logs $POD_NAME
           kubectl get pod -A
-          kubectl describe pod $POD_NAME  
+          kubectl describe pod $POD_NAME 
+
+      - name: Verify service exposure
+        run: |
+          echo "SERVICE_URL is: $SERVICE_URL"
+          echo "Checking service status..."
+          curl $SERVICE_URL/auth/ping || echo "Failed to access service at $SERVICE_URL" 
