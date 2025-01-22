@@ -89,12 +89,6 @@ jobs:
         run: |
           kubectl config use-context minikube
 
-      - name: Expose service in Minikube
-        run: |
-          minikube service authentification --url &
-          export SERVICE_URL=$(minikube service authentification --url)
-          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
-
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
@@ -124,6 +118,12 @@ jobs:
 
       - name: Wait 30 seconds
         run: sleep 30
+
+      - name: Expose service in Minikube
+        run: |
+          minikube service authentification --url &
+          export SERVICE_URL=$(minikube service authentification --url)
+          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
 
       - name: Get all pods 
         run: kubectl get pod -A
