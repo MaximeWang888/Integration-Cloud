@@ -112,7 +112,7 @@ jobs:
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
 
       - name: Get all pods 
-        run: kubeclt get pod -A
+        run: kubectl get pod -A
 
       - name: Logs of authentification pod
         run: |
