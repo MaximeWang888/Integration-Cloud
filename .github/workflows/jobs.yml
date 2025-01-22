@@ -140,6 +140,9 @@ jobs:
           # Access /etc/resolv.conf in the running container (no TTY needed)
           docker exec ${{ env.container_id }} cat /etc/resolv.conf
 
+      - name: Verify Minikube DNS
+        run: kubectl get svc -n kube-system
+
       - name: Inspect Minikube Logs
         run: minikube logs
 
