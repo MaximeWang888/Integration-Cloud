@@ -155,5 +155,6 @@ jobs:
         run: |
           echo "SERVICE_URL is: $SERVICE_URL"
           echo "Checking service status..."
-          minikube ssh
+          kubectl port-forward svc/authentification-service 8081:8081
           curl $SERVICE_URL/auth/ping || echo "Failed to access service at $SERVICE_URL" 
+          curl http://localhost:8081/auth/ping || echo "Failing to access to localhost"
