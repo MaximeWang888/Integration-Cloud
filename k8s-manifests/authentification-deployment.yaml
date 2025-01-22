@@ -31,6 +31,7 @@ spec:
               port: 8081
             initialDelaySeconds: 20
             periodSeconds: 5
+            timeoutSeconds: 2
             failureThreshold: 3
 ---
 apiVersion: v1
