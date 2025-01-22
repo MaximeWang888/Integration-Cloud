@@ -156,11 +156,7 @@ jobs:
         run: kubectl get svc -A
 
       - name: Check the authentification Service Configuration
-        run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          echo "Describe service of pod : $POD_NAME"
-          echo "========== Service Describe =========="
-          kubectl describe svc $POD_NAME 
+        run: kubectl describe svc authentification
 
       - name: Test /ping Endpoints
         run: |
