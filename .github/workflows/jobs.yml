@@ -117,6 +117,9 @@ jobs:
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
 
+      - name: Describe Pod Authentification
+        run: kubectl describe pod -l app=authentification
+
       - name: Wait 90 seconds for Pods to be Ready
         run: |
           kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s

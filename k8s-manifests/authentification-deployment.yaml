@@ -29,8 +29,9 @@ spec:
             httpGet:
               path: /auth/ping
               port: 8081
-            initialDelaySeconds: 5
-            periodSeconds: 10
+              initialDelaySeconds: 20 # Adjust based on your app startup time
+              periodSeconds: 5
+              failureThreshold: 3 # Number of retries before marking as failed
 ---
 apiVersion: v1
 kind: Service
