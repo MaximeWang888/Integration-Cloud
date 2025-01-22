@@ -111,5 +111,15 @@ jobs:
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
 
+      - name: Get all pods 
+        run: kubeclt get pod -A
+
+      - name: Logs of authentification pod
+        run: |
+          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
+          echo "Fetching logs for Pod: $POD_NAME"
+          echo "========== POD LOGS =========="
+          kubectl logs $POD_NAME
+
       - name: Wait authentification pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
