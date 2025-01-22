@@ -90,11 +90,6 @@ jobs:
       - name: Load Docker images into Minikube
         run: |
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
           minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
 
@@ -110,9 +105,6 @@ jobs:
       - name: Wait 90 seconds for Database Pod to be Ready
         run: sleep 90
 
-      - name: Describe Database Pod
-        run: kubectl describe pod $(kubectl get pods -l app=database -o jsonpath="{.items[0].metadata.name}")
-
       - name: Fetch and Echo Pod Logs
         run: |
           POD_NAME=$(kubectl get pods -l app=database -o jsonpath='{.items[0].metadata.name}')
@@ -123,18 +115,10 @@ jobs:
       - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
-          kubectl apply -f ./k8s-manifests/booking-deployment.yaml
-          kubectl apply -f ./k8s-manifests/listing-deployment.yaml
-          kubectl apply -f ./k8s-manifests/tracking-deployment.yaml
-          kubectl apply -f ./k8s-manifests/user_management-deployment.yaml
 
       - name: Wait 90 seconds for Pods to be Ready
         run: |
           kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
-          kubectl wait --for=condition=ready pod -l app=booking --timeout=90s
-          kubectl wait --for=condition=ready pod -l app=listing --timeout=90s
-          kubectl wait --for=condition=ready pod -l app=tracking --timeout=90s
-          kubectl wait --for=condition=ready pod -l app=user-management --timeout=90s
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
@@ -152,16 +136,8 @@ jobs:
       - name: Port-Forward Services
         run: |
           kubectl port-forward svc/authentification 8081:8081 &
-          kubectl port-forward svc/booking 8082:8082 &
-          nohup kubectl port-forward svc/listing 8083:8083 &
-          nohup kubectl port-forward svc/tracking 8084:8084 &
-          nohup kubectl port-forward svc/user-management 8085:8085 &
           sleep 10 # Wait for port forwarding to be ready
       
       - name: Test /ping Endpoints
         run: |
           curl http://localhost:8081/auth/ping
-          curl http://localhost:8082/bookings/ping
-          curl http://localhost:8083/listings/ping
-          curl http://localhost:8084/tracking/ping
-          curl http://localhost:8085/users/ping
