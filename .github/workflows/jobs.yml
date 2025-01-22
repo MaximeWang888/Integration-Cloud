@@ -128,14 +128,14 @@ jobs:
           kubectl apply -f ./k8s-manifests/tracking-deployment.yaml
           kubectl apply -f ./k8s-manifests/user_management-deployment.yaml
 
+      - name: Wait 90 seconds for Pods to be Ready
+        run: sleep 90
+
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
 
       - name: Verify Kubernetes Service
         run: kubectl get svc -A
-
-      - name: Wait 2 minutes for Pods to be Ready
-        run: sleep 120
 
       - name: Check Logs for All Pods
         run: |
