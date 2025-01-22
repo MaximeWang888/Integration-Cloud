@@ -148,9 +148,12 @@ jobs:
           kubectl logs $POD_NAME
           kubectl get pod -A
           kubectl describe pod $POD_NAME 
+          kubectl get svc authentification-service
+          kubectl get pods -l app=authentification
 
       - name: Verify service exposure
         run: |
           echo "SERVICE_URL is: $SERVICE_URL"
           echo "Checking service status..."
+          minikube ssh
           curl $SERVICE_URL/auth/ping || echo "Failed to access service at $SERVICE_URL" 
