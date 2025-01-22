@@ -26,6 +26,30 @@ jobs:
       - name: Build with Maven
         run: mvn clean install -DskipTests
 
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and tag Docker images
+        run: |
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest ./microservice-authentification
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest ./microservice-booking
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./microservice-user_management
+
+      - name: Push Docker images to registry
+        run: |
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+
   test:
     runs-on: ubuntu-22.04
     needs: build
@@ -43,42 +67,9 @@ jobs:
       - name: Run tests with Maven
         run: mvn test
 
-  docker:
-    runs-on: ubuntu-22.04
-    needs: test
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and tag Docker images
-        run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest ./microservice-authentification
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest ./microservice-booking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./microservice-user_management
-
-      - name: Push Docker images to registry
-        run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
-
   deploy:
     runs-on: ubuntu-22.04
-    needs: docker
+    needs: test
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -91,9 +82,6 @@ jobs:
       - name: Start Minikube
         run: minikube start --driver=docker 
 
-      - name: Verify Minikube Status
-        run: minikube status
-
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
@@ -104,7 +92,6 @@ jobs:
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
           minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
 
@@ -117,8 +104,18 @@ jobs:
           kubectl apply -f ./k8s-manifests/metrics-server-deployment.yaml
           kubectl apply -f ./k8s-manifests/eureka-deployment.yaml
 
-      - name: Wait 60 seconds for Database Pod to be Ready
-        run: sleep 60
+      - name: Wait 90 seconds for Database Pod to be Ready
+        run: sleep 90
+
+      - name: Describe Database Pod
+        run: kubectl describe pod $(kubectl get pods -l app=database -o jsonpath="{.items[0].metadata.name}")
+
+      - name: Fetch and Echo Pod Logs
+        run: |
+          POD_NAME=$(kubectl get pods -l app=database -o jsonpath='{.items[0].metadata.name}')
+          echo "Fetching logs for Pod: $POD_NAME"
+          echo "========== POD LOGS =========="
+          kubectl logs $POD_NAME || echo "No previous logs available."
 
       - name: Apply Kubernetes manifests
         run: |
@@ -135,16 +132,6 @@ jobs:
 
       - name: Wait 2 minutes for Pods to be Ready
         run: sleep 120
-
-      - name: Describe Database Pod
-        run: kubectl describe pod $(kubectl get pods -l app=database -o jsonpath="{.items[0].metadata.name}")
-
-      - name: Fetch and Echo Pod Logs
-        run: |
-          POD_NAME=$(kubectl get pods -l app=database -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl logs $POD_NAME || echo "No previous logs available."
 
       - name: Check Logs for All Pods
         run: |
