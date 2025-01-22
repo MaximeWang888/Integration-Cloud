@@ -34,15 +34,28 @@ jobs:
 
       - name: Build and tag Docker images
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest ./microservice-authentification
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./database
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest ./microservice-authentification
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest ./microservice-booking
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
 
       - name: Push Docker images to registry
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
-          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
+
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
   test:
     runs-on: ubuntu-22.04
@@ -68,11 +81,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install Minikube
-        run: |
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo install minikube-linux-amd64 /usr/local/bin/minikube
-
       - name: Start Minikube
         run: minikube start --driver=docker --cpus=4 --memory=8192
 
@@ -81,12 +89,13 @@ jobs:
 
       - name: Load Docker images into Minikube
         run: |
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
           minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
           minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
-
-      - name: Check images loaded on minikube
-        run: minikube image ls
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
 
       - name: Apply Kubernetes Database, Eureka and Metric Server manifests
         run: |
@@ -98,105 +107,6 @@ jobs:
         run: |
           kubectl wait --for=condition=ready pod --all --timeout=90s
 
-      - name: Fetch and Echo Pod Logs
-        run: |
-          POD_NAME=$(kubectl get pods -l app=database -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl logs $POD_NAME || echo "No previous logs available."
-
       - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
-
-      - name: List Docker networks
-        run: docker network ls
-
-      - name: Inspect the network
-        run: docker network inspect minikube
-
-      - name: Ensure Docker is Running
-        run: sudo systemctl status docker
-
-      - name: Get container ID dynamically
-        id: get_container_id
-        run: |
-          # Get the container ID dynamically using docker ps
-          CONTAINER_ID=$(docker ps -q --filter "name=minikube")
-          echo "Container ID: $CONTAINER_ID"
-          # Set the container ID as an output variable
-          echo "container_id=$CONTAINER_ID" >> $GITHUB_ENV
-
-      - name: Use container ID in next step
-        run: |
-          # Access /etc/resolv.conf in the running container (no TTY needed)
-          docker exec ${{ env.container_id }} cat /etc/resolv.conf
-
-      - name: Verify Minikube DNS
-        run: kubectl get svc -n kube-system
-
-      - name: Inspect Minikube Logs
-        run: minikube logs
-
-      - name: Validate Resource Requests and Limits
-        run: kubectl describe node minikube
-
-      - name: Check if the kube-dns Pod is Running
-        run: kubectl get pods -n kube-system -l k8s-app=kube-dns
-
-      - name: If the pods are not running or are in a CrashLoopBackOff state, check the logs for errors
-        run: |
-          POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}')
-          kubectl logs $POD_NAME -n kube-system
-
-      - name: Verify Kubernetes API Server Reachability
-        run: |
-          kubectl cluster-info
-          kubectl get pods -n kube-system -o wide    
-
-      - name: Investigate Networking Issues
-        run: kubectl run debug --rm -it --image=busybox --restart=Never -- nslookup kubernetes.default
-
-      - name: Describe Pod Authentification
-        run: kubectl describe pod -l app=authentification
-
-      - name: Wait 90 seconds for Pods to be Ready
-        run: |
-          kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
-
-      - name: Wait 40 seconds for Pods to be Ready
-        run: sleep 40
-
-      - name: Fetch and Echo Pod Logs Authentification
-        run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl logs $POD_NAME || echo "No previous logs available."
-
-      - name: Verify Kubernetes Pods
-        run: kubectl get pods -A
-
-      - name: Verify Kubernetes Service
-        run: kubectl get svc -A
-
-      - name: Check Logs for All Pods
-        run: |
-          for pod in $(kubectl get pods -o name); do
-            echo "Logs for $pod:"
-            kubectl logs $pod
-          done
-
-      - name: Port-Forward Services
-        run: |
-          kubectl port-forward svc/authentification 8081:8081 &
-          sleep 10 # Wait for port forwarding to be ready
-      
-      - name: Verify Kubernetes Pods
-        run: kubectl get pods -A
-
-      - name: Verify Kubernetes Service
-        run: kubectl get svc -A
-
-      - name: Check the authentification Service Configuration
-        run: kubectl describe svc authentification
