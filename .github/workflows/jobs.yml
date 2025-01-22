@@ -138,3 +138,12 @@ jobs:
 
       - name: Wait authentification pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
+
+      - name: Logs of authentification pod 2
+        run: |
+          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
+          echo "Fetching logs for Pod: $POD_NAME"
+          echo "========== POD LOGS =========="
+          kubectl logs $POD_NAME
+          kubectl get pod -A
+          kubectl describe pod $POD_NAME  
