@@ -160,7 +160,6 @@ jobs:
 
       - name: Test /ping Endpoints
         run: |
-          kubectl port-forward svc/authentification 8081:8081 &
           response=0 # Initialize the response variable
           for i in {1..10}; do
             echo "Checking http://localhost:8081/auth/ping..."
