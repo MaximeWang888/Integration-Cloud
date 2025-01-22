@@ -149,6 +149,12 @@ jobs:
       - name: Validate Resource Requests and Limits
         run: kubectl describe node minikube
 
+      - name: Check if the kube-dns Pod is Running
+        run: kubectl get pods -n kube-system -l k8s-app=kube-dns
+
+      - name: If the pods are not running or are in a CrashLoopBackOff state, check the logs for errors
+        run: kubectl logs $(kubectl get pods -n kube-system -l k8s-app=kube-dns) -n kube-system
+
       - name: Investigate Networking Issues
         run: kubectl run debug --rm -it --image=busybox --restart=Never -- nslookup kubernetes.default
 
