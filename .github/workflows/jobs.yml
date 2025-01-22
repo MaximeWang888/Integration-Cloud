@@ -150,11 +150,4 @@ jobs:
           kubectl describe pod $POD_NAME 
           kubectl get svc authentification-service
           kubectl get pods -l app=authentification
-
-      - name: Verify service exposure
-        run: |
-          echo "SERVICE_URL is: $SERVICE_URL"
-          echo "Checking service status..."
-          kubectl port-forward svc/authentification-service 8081:8081
-          curl $SERVICE_URL/auth/ping || echo "Failed to access service at $SERVICE_URL" 
-          curl http://localhost:8081/auth/ping || echo "Failing to access to localhost"
+          kubectl describe pod
