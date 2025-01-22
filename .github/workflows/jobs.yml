@@ -111,6 +111,9 @@ jobs:
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
 
+      - name: Wait 30 seconds
+        run: sleep 30
+
       - name: Get all pods 
         run: kubectl get pod -A
 
