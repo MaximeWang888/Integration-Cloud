@@ -153,7 +153,9 @@ jobs:
         run: kubectl get pods -n kube-system -l k8s-app=kube-dns
 
       - name: If the pods are not running or are in a CrashLoopBackOff state, check the logs for errors
-        run: kubectl logs $(kubectl get pods -n kube-system -l k8s-app=kube-dns) -n kube-system
+        run: |
+          POD_NAME=$(kubectl get pods -n kube-system -l k8s-app=kube-dns -o jsonpath='{.items[0].metadata.name}')
+          kubectl logs $POD_NAME -n kube-system
 
       - name: Investigate Networking Issues
         run: kubectl run debug --rm -it --image=busybox --restart=Never -- nslookup kubernetes.default
