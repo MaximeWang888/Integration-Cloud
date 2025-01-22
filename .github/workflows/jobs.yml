@@ -175,6 +175,8 @@ jobs:
           if [ "$response" -ne 200 ]; then
             echo "Service did not become ready. Last HTTP status: $response"
             exit 1
+          else
+            echo "Service is ready. Last HTTP status: $response"
           fi
 
 
