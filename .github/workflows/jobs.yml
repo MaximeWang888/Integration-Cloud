@@ -82,7 +82,7 @@ jobs:
           sudo install minikube-linux-amd64 /usr/local/bin/minikube
 
       - name: Start Minikube
-        run: minikube start --driver=docker 
+        run: minikube start --driver=docker --cpus=4 --memory=8192
 
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
@@ -103,7 +103,8 @@ jobs:
           kubectl apply -f ./k8s-manifests/eureka-deployment.yaml
 
       - name: Wait 90 seconds for Database Pod to be Ready
-        run: sleep 90
+        run: |
+          kubectl wait --for=condition=ready pod -l app=database --timeout=90s
 
       - name: Fetch and Echo Pod Logs
         run: |
@@ -119,6 +120,13 @@ jobs:
       - name: Wait 90 seconds for Pods to be Ready
         run: |
           kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
+
+      - name: Fetch and Echo Pod Logs Authentification
+        run: |
+          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
+          echo "Fetching logs for Pod: $POD_NAME"
+          echo "========== POD LOGS =========="
+          kubectl logs $POD_NAME || echo "No previous logs available."
 
       - name: Verify Kubernetes Pods
         run: kubectl get pods -A
