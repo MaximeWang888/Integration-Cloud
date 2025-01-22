@@ -110,3 +110,6 @@ jobs:
       - name: Apply Kubernetes manifests
         run: |
           kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
+
+      - name: Wait authentification pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
