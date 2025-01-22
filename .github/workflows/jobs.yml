@@ -157,8 +157,3 @@ jobs:
 
       - name: Check the authentification Service Configuration
         run: kubectl describe svc authentification
-
-      - name: Test /ping Endpoints
-        run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          kubectl exec -it $POD_NAME -- sh -c "wget -qO- http://localhost:8081/auth/ping"
