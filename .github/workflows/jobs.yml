@@ -85,11 +85,9 @@ jobs:
       - name: Start Minikube
         run: minikube start --driver=docker --cpus=4 --memory=8192 --kubernetes-version=v1.21.0
 
-      - name: Set kubectl context
+      - name: Set up kubectl context for Minikube
         run: |
-          echo $(minikube kubeconfig) > kubeconfig
-          export KUBEVIRT_KUBEVERSION=$(minikube version | cut -d " " -f3)
-          kubectl --kubeconfig=kubeconfig version
+          kubectl config use-context minikube
 
       - name: Expose service in Minikube
         run: |
