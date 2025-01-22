@@ -149,14 +149,37 @@ jobs:
           kubectl port-forward svc/authentification 8081:8081 &
           sleep 10 # Wait for port forwarding to be ready
       
+      - name: Verify Kubernetes Pods
+        run: kubectl get pods -A
+
+      - name: Verify Kubernetes Service
+        run: kubectl get svc -A
+
+      - name: Check the authentification Service Configuration
+        run: |
+          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
+          echo "Describe service of pod : $POD_NAME"
+          echo "========== Service Describe =========="
+          kubectl describe svc $POD_NAME 
+
       - name: Test /ping Endpoints
         run: |
           kubectl port-forward svc/authentification 8081:8081 &
-          for i in {1..20}; do
-            if curl -s http://localhost:8081 > /dev/null; then
-              echo "Port forwarding is ready!"
+          response=0 # Initialize the response variable
+          for i in {1..10}; do
+            echo "Checking http://localhost:8081/auth/ping..."
+            response=$(curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/auth/ping)
+            if [ "$response" -eq 200 ]; then
+              echo "Port forwarding and service are ready!"
               break
+            else
+              echo "Waiting for port forwarding or service readiness (HTTP $response)..."
             fi
-            echo "Waiting for port forwarding..."
             sleep 1
           done
+          if [ "$response" -ne 200 ]; then
+            echo "Service did not become ready. Last HTTP status: $response"
+            exit 1
+          fi
+
+
