@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and tag Docker images
+      - name: Build Docker images
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./database
@@ -41,6 +41,7 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
+      
       - name: Push Docker images to registry
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
@@ -93,7 +94,14 @@ jobs:
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
-      # 5. Deploy Database, Eureka Service
+      # 5. Build Docker images
+      - name: Build Docker images
+        run: |
+          docker build -t microservice-eureka:latest ./microservice-eureka
+          docker build -t microservice-database:latest ./database
+          docker build -t microservice-authentification:latest ./microservice-authentification
+
+      # 6. Deploy Database, Eureka Service
       - name: Deploy Database, Eureka to Kubernetes 
         run: |
           kubectl apply -f k8s-manifests/database-deployment.yaml
@@ -102,18 +110,19 @@ jobs:
       - name: Wait for Eureka & Database Pods to be Ready
         run: kubectl wait --for=condition=ready pod --all --timeout=120s
 
-      # 6. Deploy Authentification Service
-      - name: Deploy Authentification Service to Kubernetes
-        run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
+      # 7. Deploy All Microservices
+      - name: Deploy All Microservices to Kubernetes
+        run: |
+          kubectl apply -f k8s-manifests/authentification-deployment.yaml
 
-      - name: Wait authentification pod to be ready
-        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
+      - name: Wait All Microservices pod to be ready
+        run: kubectl wait --for=condition=ready pod --all --timeout=120s
 
-      # 7. Verify pods are running
+      # 8. Verify pods are running
       - name: Verify Pods
         run: kubectl get pods -o wide
 
-      # 8. Expose the service and test it
+      # 9. Expose the service and test it
       - name: Expose Authentification Service
         run: kubectl expose deployment authentification --type=NodePort --name=authentification-service
 
@@ -136,7 +145,7 @@ jobs:
         run: |
           kubectl delete pod debug
 
-      # 9. Retrieve Minikube IP and test with curl
+      # 10. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
         run: |
           # Récupérer l'IP de Minikube
