@@ -193,6 +193,32 @@ jobs:
           echo "Service URL of Booking: $SERVICE_URL_BOOKING"
           curl $SERVICE_URL_BOOKING
 
+
+      - name: Deploy Tracking Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/tracking-deployment.yaml
+
+      - name: Wait Tracking pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=tracking --timeout=120s
+
+       # 8. Expose Tracking service and test it
+      - name: Expose Tracking
+        run: kubectl expose deployment tracking --type=NodePort --name=tracking-service
+
+      - name: Test Tracking service from inside cluster
+        run: kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
+
+      - name: Retrieve Minikube IP and dynamic NodePort Tracking
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_TRACKING=$(kubectl get svc tracking-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Tracking: $NODE_PORT_TRACKING"
+          SERVICE_URL_TRACKING="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/ping"
+          echo "Service URL of Tracking: $SERVICE_URL_TRACKING"
+          curl $SERVICE_URL_TRACKING
+
+
+
       - name: Deploy Listing Service to Kubernetes
         run: kubectl apply -f k8s-manifests/listing-deployment.yaml
 
@@ -220,28 +246,7 @@ jobs:
           echo "Service URL of Listing: $SERVICE_URL_LISTING"
           curl $SERVICE_URL_LISTING
 
-      - name: Deploy Tracking Service to Kubernetes
-        run: kubectl apply -f k8s-manifests/tracking-deployment.yaml
 
-      - name: Wait Tracking pod to be ready
-        run: kubectl wait --for=condition=ready pod -l app=tracking --timeout=120s
-
-       # 8. Expose Tracking service and test it
-      - name: Expose Tracking
-        run: kubectl expose deployment tracking --type=NodePort --name=tracking-service
-
-      - name: Test Tracking service from inside cluster
-        run: kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
-
-      - name: Retrieve Minikube IP and dynamic NodePort Tracking
-        run: |
-          MINIKUBE_IP=$(minikube ip)
-          echo "Minikube IP: $MINIKUBE_IP"
-          NODE_PORT_TRACKING=$(kubectl get svc tracking-service -o jsonpath='{.spec.ports[0].nodePort}')
-          echo "NodePort Tracking: $NODE_PORT_TRACKING"
-          SERVICE_URL_TRACKING="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/ping"
-          echo "Service URL of Tracking: $SERVICE_URL_TRACKING"
-          curl $SERVICE_URL_TRACKING
 
       - name: Deploy User Management Service to Kubernetes
         run: kubectl apply -f k8s-manifests/user_management-deployment.yaml
