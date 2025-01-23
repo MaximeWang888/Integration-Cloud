@@ -178,6 +178,56 @@ jobs:
           minikube start --driver=docker
           kubectl get nodes
 
+      # 5. Set up Docker to use Minikube's daemon
+      - name: Set up Docker environment
+        run: eval $(minikube docker-env)
+
+      # 6. Build Docker images
+      - name: Build Docker images
+        run: |
+          docker build -t microservice-eureka:latest ./microservice-eureka
+          docker build -t microservice-database:latest ./database
+          docker build -t microservice-authentification:latest ./microservice-authentification
+
+      # 7. Apply Kubernetes manifests (Database first)
+      - name: Deploy Database to Kubernetes
+        run: kubectl apply -f k8s-manifests/database-deployment.yaml
+
+      - name: Wait for Database Pod to be Ready
+        run: kubectl wait --for=condition=ready pod -l app=database --timeout=120s
+
+      # 8. Deploy Eureka
+      - name: Deploy Eureka to Kubernetes
+        run: kubectl apply -f k8s-manifests/eureka-deployment.yaml
+
+      - name: Wait for Eureka Pod to be Ready
+        run: kubectl wait --for=condition=ready pod -l app=eureka --timeout=120s
+
+      # 9. Deploy Authentification Service
+      - name: Deploy Authentification Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
+
+      - name: Wait for Authentification Pod to be Ready
+        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
+
+      # 10. Verify pods are running
+      - name: Verify Pods
+        run: kubectl get pods -o wide
+
+      # 11. Expose the service and test it
+      - name: Expose Authentification Service
+        run: kubectl expose deployment authentification --type=NodePort --name=authentification-service
+
+
+      - name: Describe svc
+        run: kubectl describe svc authentification-service
+
+      # - name: Test Authentification Service
+      #   run: |
+      #     URL=$(minikube service authentification-service --url)
+      #     echo "Service URL: $URL"
+      #     curl $URL
+
       # 8. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and test service URL
         run: |
@@ -195,49 +245,3 @@ jobs:
           
           # Tester la connexion avec curl
           curl $SERVICE_URL
-
-      # # 5. Set up Docker to use Minikube's daemon
-      # - name: Set up Docker environment
-      #   run: eval $(minikube docker-env)
-
-      # # 6. Build Docker images
-      # - name: Build Docker images
-      #   run: |
-      #     docker build -t microservice-eureka:latest ./microservice-eureka
-      #     docker build -t microservice-database:latest ./database
-      #     docker build -t microservice-authentification:latest ./microservice-authentification
-
-      # # 7. Apply Kubernetes manifests (Database first)
-      # - name: Deploy Database to Kubernetes
-      #   run: kubectl apply -f k8s-manifests/database-deployment.yaml
-
-      # - name: Wait for Database Pod to be Ready
-      #   run: kubectl wait --for=condition=ready pod -l app=database --timeout=120s
-
-      # # 8. Deploy Eureka
-      # - name: Deploy Eureka to Kubernetes
-      #   run: kubectl apply -f k8s-manifests/eureka-deployment.yaml
-
-      # - name: Wait for Eureka Pod to be Ready
-      #   run: kubectl wait --for=condition=ready pod -l app=eureka --timeout=120s
-
-      # # 9. Deploy Authentification Service
-      # - name: Deploy Authentification Service to Kubernetes
-      #   run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
-
-      # - name: Wait for Authentification Pod to be Ready
-      #   run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
-
-      # # 10. Verify pods are running
-      # - name: Verify Pods
-      #   run: kubectl get pods -o wide
-
-      # # 11. Expose the service and test it
-      # - name: Expose Authentification Service
-      #   run: kubectl expose deployment authentification --type=NodePort --name=authentification-service
-
-      # - name: Test Authentification Service
-      #   run: |
-      #     URL=$(minikube service authentification-service --url)
-      #     echo "Service URL: $URL"
-      #     curl $URL
