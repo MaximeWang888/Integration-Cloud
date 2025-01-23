@@ -146,6 +146,9 @@ jobs:
         run: |
           kubectl logs deployment/authentification
 
+      - name: Check service eureka server name
+        run: kubectl get svc -n default
+
       # 9. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
         run: |
