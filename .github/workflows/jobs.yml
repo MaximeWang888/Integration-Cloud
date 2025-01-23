@@ -146,12 +146,6 @@ jobs:
         run: |
           kubectl logs deployment/authentification
 
-      - name: Check service eureka server name
-        run: kubectl get svc -n default
-
-      # - name: Check resolution of eureka dns in Minikube
-        # run: kubectl exec debug -- curl eureka.default.svc.cluster.local
-
       # 9. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
         run: |
@@ -162,10 +156,6 @@ jobs:
           SERVICE_URL_AUTHENTIFICATION="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/ping"
           echo "Service URL of Authentification: $SERVICE_URL_AUTHENTIFICATION"
           curl $SERVICE_URL_AUTHENTIFICATION
-          NODE_PORT_EUREKA=$(kubectl get svc eureka-service -o jsonpath='{.spec.ports[0].nodePort}')
-          SERVICE_URL_EUREKA="http://$MINIKUBE_IP:$NODE_PORT_EUREKA/eureka"
-          echo "Check registered services in Eureka"
-          curl $SERVICE_URL_EUREKA
 
       - name: Deploy Booking Service to Kubernetes
         run: kubectl apply -f k8s-manifests/booking-deployment.yaml
@@ -185,6 +175,23 @@ jobs:
 
       - name: Wait Booking pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=booking --timeout=120s
+
+       # 8. Expose the service and test it
+      - name: Expose Booking
+        run: kubectl expose deployment booking --type=NodePort --name=booking-service
+
+      - name: Test Booking service from inside cluster
+        run: kubectl exec debug -- curl http://booking-service:8082/bookings/ping/
+
+      - name: Retrieve Minikube IP and dynamic NodePort Booking
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_BOOKING=$(kubectl get svc booking-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Booking: $NODE_PORT_BOOKING"
+          SERVICE_URL_BOOKING="http://$MINIKUBE_IP:$NODE_PORT_BOOKING/bookings/ping"
+          echo "Service URL of Booking: $SERVICE_URL_BOOKING"
+          curl $SERVICE_URL_BOOKING
 
       - name: Deploy Listing Service to Kubernetes
         run: kubectl apply -f k8s-manifests/listing-deployment.yaml
