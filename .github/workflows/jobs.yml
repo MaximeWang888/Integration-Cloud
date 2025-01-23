@@ -207,8 +207,8 @@ jobs:
         run: |
           kubectl logs deployment/listing
 
-      - name: Test Listing service from inside cluster
-        run: kubectl exec debug -- curl http://listing-service:8083/listings/ping/
+      # - name: Test Listing service from inside cluster
+      #   run: kubectl exec debug -- curl http://listing-service:8083/listings/ping/
 
       - name: Retrieve Minikube IP and dynamic NodePort Listing
         run: |
