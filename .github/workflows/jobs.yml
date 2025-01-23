@@ -218,9 +218,24 @@ jobs:
       - name: Expose Authentification Service
         run: kubectl expose deployment authentification --type=NodePort --name=authentification-service
 
-
       - name: Describe svc
         run: kubectl describe svc authentification-service
+
+      - name: Create debug pod
+        run: |
+          kubectl run debug --image=curlimages/curl --restart=Never -- sleep 3600
+
+      - name: Wait for debug pod to be ready
+        run: |
+          kubectl wait --for=condition=Ready pod/debug --timeout=60s
+
+      - name: Test service from inside cluster
+        run: |
+          kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
+
+      - name: Delete debug pod
+        run: |
+          kubectl delete pod debug
 
       # 8. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
