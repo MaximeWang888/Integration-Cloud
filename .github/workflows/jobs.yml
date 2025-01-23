@@ -175,7 +175,7 @@ jobs:
       # 4. Start Minikube
       - name: Start Minikube
         run: |
-          sudo minikube start --driver=none
+          sudo minikube start --driver=docker
           sudo chown -R $USER ~/.kube ~/.minikube
           kubectl get nodes
 
