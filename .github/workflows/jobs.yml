@@ -94,12 +94,16 @@ jobs:
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
-      # 5. Build Docker images
-      - name: Build Docker images
+      # 5. Pull Docker images from Docker Hub 
+      - name: Pull Docker images
         run: |
-          docker build -t microservice-eureka:latest ./microservice-eureka
-          docker build -t microservice-database:latest ./database
-          docker build -t microservice-authentification:latest ./microservice-authentification
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
 
       # 6. Deploy Database, Eureka Service
       - name: Deploy Database, Eureka to Kubernetes 
@@ -140,10 +144,6 @@ jobs:
       - name: Test service from inside cluster
         run: |
           kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
-
-      - name: Delete debug pod
-        run: |
-          kubectl delete pod debug
 
       # 10. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
