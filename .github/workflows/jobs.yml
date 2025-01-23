@@ -129,17 +129,15 @@ jobs:
           kubectl expose deployment eureka --type=NodePort --name=eureka-service
 
       - name: Describe svc
-        run: kubectl describe svc authentification-service
+        run: |
+          kubectl describe svc authentification-service
+          kubectl describe svc eureka-service
 
       - name: Create debug pod
         run: kubectl run debug --image=curlimages/curl --restart=Never -- sleep 3600
 
       - name: Wait for debug pod to be ready
         run: kubectl wait --for=condition=Ready pod/debug --timeout=60s
-
-      - name: Check registered services in Eureka
-        run: |
-          kubectl exec debug -- curl http://eureka-service:8761/eureka
 
       - name: Test service from inside cluster
         run: kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
@@ -154,6 +152,10 @@ jobs:
           SERVICE_URL_AUTHENTIFICATION="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/ping"
           echo "Service URL of Authentification: $SERVICE_URL_AUTHENTIFICATION"
           curl $SERVICE_URL_AUTHENTIFICATION
+          NODE_PORT_EUREKA=$(kubectl get svc eureka-service -o jsonpath='{.spec.ports[0].nodePort}')
+          SERVICE_URL_EUREKA="http://$MINIKUBE_IP:$NODE_PORT_EUREKA/eureka"
+          echo "Check registered services in Eureka"
+          curl $SERVICE_URL_EUREKA
 
       - name: Deploy Booking Service to Kubernetes
         run: kubectl apply -f k8s-manifests/booking-deployment.yaml
