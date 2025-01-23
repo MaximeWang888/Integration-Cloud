@@ -261,7 +261,7 @@ jobs:
           echo "NodePort: $NODE_PORT"
           
           # Construire l'URL du service avec l'IP de Minikube et le NodePort
-          SERVICE_URL="http://$MINIKUBE_IP:$NODE_PORT"
+          SERVICE_URL="http://$MINIKUBE_IP:$NODE_PORT/auth/ping"
           echo "Service URL: $SERVICE_URL"
           
           # Tester la connexion avec curl
