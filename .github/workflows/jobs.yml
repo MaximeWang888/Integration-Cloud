@@ -228,6 +228,10 @@ jobs:
       #     echo "Service URL: $URL"
       #     curl $URL
 
+      # 
+      - name: Pod temporaire
+        run: kubectl run -i --tty --rm debug --image=alpine --restart=Never -- /bin/sh
+
       # 8. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
         run: |
