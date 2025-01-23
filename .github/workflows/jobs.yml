@@ -229,7 +229,7 @@ jobs:
       #     curl $URL
 
       # 8. Retrieve Minikube IP and test with curl
-      - name: Retrieve Minikube IP and test service URL
+      - name: Retrieve Minikube IP and dynamic NodePort
         run: |
           # Récupérer l'IP de Minikube
           MINIKUBE_IP=$(minikube ip)
@@ -237,10 +237,14 @@ jobs:
           # Afficher l'IP de Minikube
           echo "Minikube IP: $MINIKUBE_IP"
           
-          # Construire l'URL du service (ajuster le port selon la configuration de ton service)
-          SERVICE_URL="http://$MINIKUBE_IP:32190"  # Remplace 32190 par ton port réel
+          # Obtenir le port dynamique (NodePort) de ton service
+          NODE_PORT=$(kubectl get svc authentification-service -o jsonpath='{.spec.ports[0].nodePort}')
           
-          # Afficher l'URL du service
+          # Afficher le NodePort
+          echo "NodePort: $NODE_PORT"
+          
+          # Construire l'URL du service avec l'IP de Minikube et le NodePort
+          SERVICE_URL="http://$MINIKUBE_IP:$NODE_PORT"
           echo "Service URL: $SERVICE_URL"
           
           # Tester la connexion avec curl
