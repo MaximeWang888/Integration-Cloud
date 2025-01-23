@@ -87,7 +87,7 @@ jobs:
       # 3. Start Minikube
       - name: Start Minikube
         run: |
-          minikube start --driver=docker
+          minikube start --driver=docker --cpus=4 --memory=8192
           kubectl get nodes
 
       # 4. Set up Docker to use Minikube's daemon
