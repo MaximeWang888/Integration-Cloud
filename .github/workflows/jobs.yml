@@ -115,16 +115,35 @@ jobs:
         run: kubectl wait --for=condition=ready pod --all --timeout=120s
 
       # 7. Deploy All Microservices
-      - name: Deploy All Microservices to Kubernetes
-        run: |
-          kubectl apply -f k8s-manifests/authentification-deployment.yaml
-          kubectl apply -f k8s-manifests/booking-deployment.yaml
-          kubectl apply -f k8s-manifests/listing-deployment.yaml
-          kubectl apply -f k8s-manifests/tracking-deployment.yaml
-          kubectl apply -f k8s-manifests/user_management-deployment.yaml
+      - name: Deploy Authentification Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
 
-      - name: Wait All Microservices pod to be ready
-        run: kubectl wait --for=condition=ready pod --all --timeout=120s
+      - name: Wait Authentification pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
+
+      - name: Deploy Booking Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/booking-deployment.yaml
+
+      - name: Wait Booking pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=booking --timeout=120s
+
+      - name: Deploy Listing Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/listing-deployment.yaml
+
+      - name: Wait Listing pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=listing --timeout=120s
+
+      - name: Deploy Tracking Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/tracking-deployment.yaml
+
+      - name: Wait Tracking pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=tracking --timeout=120s
+
+      - name: Deploy User Management Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/user_management-deployment.yaml
+
+      - name: Wait User Management pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=user-management --timeout=120s
 
       # 8. Verify pods are running
       - name: Verify Pods
