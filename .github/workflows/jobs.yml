@@ -233,6 +233,10 @@ jobs:
         run: |
           kubectl run debug --image=alpine --restart=Never -- sleep 3600
 
+      - name: Wait for debug pod to be ready
+        run: |
+          kubectl wait --for=condition=Ready pod/debug --timeout=60s
+
       - name: Test service from inside cluster
         run: |
           kubectl exec debug -- curl http://authentification-service:8081
