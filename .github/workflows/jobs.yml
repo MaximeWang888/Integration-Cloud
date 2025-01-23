@@ -231,7 +231,7 @@ jobs:
       # 
       - name: Create debug pod
         run: |
-          kubectl run debug --image=alpine --restart=Never -- sleep 3600
+          kubectl run debug --image=curlimages/curl --restart=Never -- sleep 3600
 
       - name: Wait for debug pod to be ready
         run: |
