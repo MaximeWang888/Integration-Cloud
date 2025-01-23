@@ -4,7 +4,6 @@ spring:
   cloud:
     loadbalancer:
       enabled: true
-      retry: true
   datasource:
     url: jdbc:mysql://database:3306/microservice_db
     username: user
