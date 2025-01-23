@@ -3,7 +3,8 @@ spring:
     name: microservice-booking
   cloud:
     loadbalancer:
-      enabled: false
+      enabled: true
+      retry: true
   datasource:
     url: jdbc:mysql://database:3306/microservice_db
     username: user

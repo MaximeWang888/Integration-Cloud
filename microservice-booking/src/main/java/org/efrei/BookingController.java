@@ -3,11 +3,13 @@ package org.efrei;
 import org.efrei.clients.AuthServiceClient;
 import org.efrei.entity.Booking;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/bookings")
+@FeignClient(name = "authentification")
 public class BookingController {
     @Autowired
     private BookingService bookingService;
