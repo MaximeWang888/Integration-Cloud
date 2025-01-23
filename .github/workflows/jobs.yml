@@ -118,14 +118,6 @@ jobs:
 
       - name: Wait 30 seconds
         run: sleep 30
-      
-      - name: Describe authentification
-        run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl describe pod $POD_NAME 
-          kubectl get svc 
 
       - name: Expose service in Minikube
         run: |
@@ -133,14 +125,6 @@ jobs:
           minikube service authentification-service --url &
           export SERVICE_URL=$(minikube service authentification-service --url)
           echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
-
-      - name: Describe authentification after expose service in minikube
-        run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl describe pod $POD_NAME 
-          kubectl get svc     
 
       - name: Get all pods 
         run: kubectl get pod -A
@@ -166,4 +150,12 @@ jobs:
           kubectl describe pod $POD_NAME 
           kubectl get svc authentification-service
           kubectl get pods -l app=authentification
+
+      - name: Verify service exposure
+        run: |
+          echo "SERVICE_URL is: $SERVICE_URL"
+          echo "Checking service status..."
+          kubectl port-forward svc/authentification-service 8081:8081
+          curl $SERVICE_URL/auth/ping || echo "Failed to access service at $SERVICE_URL" 
+          curl http://localhost:8081/auth/ping || echo "Failing to access to localhost"
           kubectl describe pod
