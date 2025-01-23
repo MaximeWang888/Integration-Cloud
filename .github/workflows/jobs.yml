@@ -139,7 +139,7 @@ jobs:
 
       - name: Check registered services in Eureka
         run: |
-          kubectl exec debug -- curl http://eureka-service:8761/eureka/apps
+          kubectl exec debug -- curl http://eureka-service:8761/eureka
 
       - name: Test service from inside cluster
         run: kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
