@@ -203,9 +203,9 @@ jobs:
       - name: Expose Listing
         run: kubectl expose deployment listing --type=NodePort --name=listing-service
 
-      - name: Get logs for authentification service
+      - name: Get logs for listing service
         run: |
-          kubectl logs deployment/authentification
+          kubectl logs deployment/listing
 
       - name: Test Listing service from inside cluster
         run: kubectl exec debug -- curl http://listing-service:8083/listings/ping/
