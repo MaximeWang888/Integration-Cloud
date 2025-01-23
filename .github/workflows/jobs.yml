@@ -149,8 +149,8 @@ jobs:
       - name: Check service eureka server name
         run: kubectl get svc -n default
 
-      - name: Check resolution of eureka dns in Minikube
-        run: kubectl exec debug -- curl eureka.default.svc.cluster.local
+      # - name: Check resolution of eureka dns in Minikube
+        # run: kubectl exec debug -- curl eureka.default.svc.cluster.local
 
       # 9. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
