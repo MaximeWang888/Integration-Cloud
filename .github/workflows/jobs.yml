@@ -72,53 +72,48 @@ jobs:
     runs-on: ubuntu-22.04
     needs: test
     steps:
+      # 1. Check out the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Install Minikube
       - name: Install Minikube
         run: |
           curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
           sudo mv minikube-linux-amd64 /usr/local/bin/minikube
           sudo chmod +x /usr/local/bin/minikube
 
+      # 3. Start Minikube
       - name: Start Minikube
         run: |
           minikube start --driver=docker
           kubectl get nodes
 
-      - name: Set up kubectl context for Minikube
-        run: |
-          kubectl config use-context minikube
-
+      # 4. Set up Docker to use Minikube's daemon
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
-      - name: Build Docker images
+      # 5. Deploy Database, Eureka Service
+      - name: Deploy Database, Eureka to Kubernetes 
         run: |
-          docker build -t microservice-eureka:latest ./microservice-eureka
-          docker build -t microservice-database:latest ./database
-          docker build -t microservice-authentification:latest ./microservice-authentification
+          kubectl apply -f k8s-manifests/database-deployment.yaml
+          kubectl apply -f k8s-manifests/eureka-deployment.yaml
 
-      - name: Apply Kubernetes Database, Eureka and Metric Server manifests
-        run: |
-          kubectl apply -f ./k8s-manifests/database-deployment.yaml
-          kubectl apply -f ./k8s-manifests/eureka-deployment.yaml
+      - name: Wait for Eureka & Database Pods to be Ready
+        run: kubectl wait --for=condition=ready pod --all --timeout=120s
 
-      - name: Wait 90 seconds for Database Pod to be Ready
-        run: |
-          kubectl wait --for=condition=ready pod --all --timeout=90s
-
-      - name: Apply Kubernetes manifests
-        run: |
-          kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
-
-      - name: Wait 30 seconds
-        run: sleep 30
+      # 6. Deploy Authentification Service
+      - name: Deploy Authentification Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
 
       - name: Wait authentification pod to be ready
-        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
+        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
 
-      # 11. Expose the service and test it
+      # 7. Verify pods are running
+      - name: Verify Pods
+        run: kubectl get pods -o wide
+
+      # 8. Expose the service and test it
       - name: Expose Authentification Service
         run: kubectl expose deployment authentification --type=NodePort --name=authentification-service
 
@@ -141,7 +136,7 @@ jobs:
         run: |
           kubectl delete pod debug
 
-      # 8. Retrieve Minikube IP and test with curl
+      # 9. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
         run: |
           # Récupérer l'IP de Minikube
