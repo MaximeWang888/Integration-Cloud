@@ -142,6 +142,10 @@ jobs:
       - name: Test service from inside cluster
         run: kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
 
+      - name: Get logs for authentification service
+        run: |
+          kubectl logs deployment/authentification
+
       # 9. Retrieve Minikube IP and test with curl
       - name: Retrieve Minikube IP and dynamic NodePort
         run: |
