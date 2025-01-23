@@ -122,7 +122,7 @@ jobs:
       - name: Wait Authentification pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
 
-       # 8. Expose the service and test it
+       # 8. Expose Authentification service and test it
       - name: Expose Authentification
         run: |
           kubectl expose deployment authentification --type=NodePort --name=authentification-service
@@ -176,7 +176,7 @@ jobs:
       - name: Wait Booking pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=booking --timeout=120s
 
-       # 8. Expose the service and test it
+       # 8. Expose Booking service and test it
       - name: Expose Booking
         run: kubectl expose deployment booking --type=NodePort --name=booking-service
 
@@ -199,11 +199,45 @@ jobs:
       - name: Wait Listing pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=listing --timeout=120s
 
+       # 8. Expose Listing service and test it
+      - name: Expose Listing
+        run: kubectl expose deployment listing --type=NodePort --name=listing-service
+
+      - name: Test Listing service from inside cluster
+        run: kubectl exec debug -- curl http://listing-service:8083/listings/ping/
+
+      - name: Retrieve Minikube IP and dynamic NodePort Listing
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_LISTING=$(kubectl get svc listing-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Listing: $NODE_PORT_LISTING"
+          SERVICE_URL_LISTING="http://$MINIKUBE_IP:$NODE_PORT_LISTING/listings/ping"
+          echo "Service URL of Listing: $SERVICE_URL_LISTING"
+          curl $SERVICE_URL_LISTING
+
       - name: Deploy Tracking Service to Kubernetes
         run: kubectl apply -f k8s-manifests/tracking-deployment.yaml
 
       - name: Wait Tracking pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=tracking --timeout=120s
+
+       # 8. Expose Tracking service and test it
+      - name: Expose Tracking
+        run: kubectl expose deployment tracking --type=NodePort --name=tracking-service
+
+      - name: Test Tracking service from inside cluster
+        run: kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
+
+      - name: Retrieve Minikube IP and dynamic NodePort Tracking
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_TRACKING=$(kubectl get svc tracking-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Tracking: $NODE_PORT_TRACKING"
+          SERVICE_URL_TRACKING="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/ping"
+          echo "Service URL of Tracking: $SERVICE_URL_TRACKING"
+          curl $SERVICE_URL_TRACKING
 
       - name: Deploy User Management Service to Kubernetes
         run: kubectl apply -f k8s-manifests/user_management-deployment.yaml
@@ -211,65 +245,19 @@ jobs:
       - name: Wait User Management pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=user-management --timeout=120s
 
-      # 8. Verify pods are running
-      - name: Verify Pods
-        run: kubectl get pods -o wide
+       # 8. Expose User Management service and test it
+      - name: Expose User Management
+        run: kubectl expose deployment user-management --type=NodePort --name=user-management-service
 
-      # 9. Expose the service and test it
-      - name: Expose All Microservices
-        run: |
-          kubectl expose deployment booking --type=NodePort --name=booking-service
-          kubectl expose deployment listing --type=NodePort --name=listing-service
-          kubectl expose deployment tracking --type=NodePort --name=tracking-service
-          kubectl expose deployment user-management --type=NodePort --name=user-management-service
+      - name: Test User Management service from inside cluster
+        run: kubectl exec debug -- curl http://user-management-service:8085/users/ping/
 
-      - name: Describe svc
-        run: |
-          kubectl describe svc booking-service
-          kubectl describe svc listing-service
-          kubectl describe svc tracking-service
-          kubectl describe svc user-management-service
-
-      - name: Test service from inside cluster
-        run: |
-          kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
-          kubectl exec debug -- curl http://booking-service:8082/bookings/ping/
-          kubectl exec debug -- curl http://listing-service:8083/listings/ping/
-          kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
-          kubectl exec debug -- curl http://user-management-service:8085/users/ping/
-
-      # 10. Retrieve Minikube IP and test with curl
-      - name: Retrieve Minikube IP and dynamic NodePort
+      - name: Retrieve Minikube IP and dynamic NodePort User Management
         run: |
           MINIKUBE_IP=$(minikube ip)
-          
           echo "Minikube IP: $MINIKUBE_IP"
-          
-          NODE_PORT_AUTHENTIFICATION=$(kubectl get svc authentification-service -o jsonpath='{.spec.ports[0].nodePort}')
-          NODE_PORT_BOOKING=$(kubectl get svc booking-service -o jsonpath='{.spec.ports[0].nodePort}')
-          NODE_PORT_LISTING=$(kubectl get svc listing-service -o jsonpath='{.spec.ports[0].nodePort}')
-          NODE_PORT_TRACKING=$(kubectl get svc tracking-service -o jsonpath='{.spec.ports[0].nodePort}')
           NODE_PORT_USER_MANAGEMENT=$(kubectl get svc user-management-service -o jsonpath='{.spec.ports[0].nodePort}')
-          
-          echo "NodePort Authentification: $NODE_PORT_AUTHENTIFICATION"
-          echo "NodePort Booking: $NODE_PORT_BOOKING"
-          echo "NodePort Listing: $NODE_PORT_LISTING"
-          echo "NodePort Tracking: $NODE_PORT_TRACKING"
           echo "NodePort User Management: $NODE_PORT_USER_MANAGEMENT"
-          
-          SERVICE_URL_AUTHENTIFICATION="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/ping"
-          SERVICE_URL_BOOKING="http://$MINIKUBE_IP:$NODE_PORT_BOOKING/bookings/ping"
-          SERVICE_URL_LISTING="http://$MINIKUBE_IP:$NODE_PORT_LISTING/listings/ping"
-          SERVICE_URL_TRACKING="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/ping"
           SERVICE_URL_USER_MANAGEMENT="http://$MINIKUBE_IP:$NODE_PORT_USER_MANAGEMENT/users/ping"
-
-          echo "Service URL of Authentification: $SERVICE_URL_AUTHENTIFICATION"
-          curl $SERVICE_URL_AUTHENTIFICATION
-          echo "Service URL of Booking: $SERVICE_URL_BOOKING"
-          curl $SERVICE_URL_BOOKING
-          echo "Service URL of Listing: $SERVICE_URL_LISTING"
-          curl $SERVICE_URL_LISTING
-          echo "Service URL of Tracking: $SERVICE_URL_TRACKING"
-          curl $SERVICE_URL_TRACKING
           echo "Service URL of User Management: $SERVICE_URL_USER_MANAGEMENT"
           curl $SERVICE_URL_USER_MANAGEMENT
