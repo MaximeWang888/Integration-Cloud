@@ -201,7 +201,7 @@ jobs:
         run: kubectl apply -f k8s-manifests/eureka-deployment.yaml
 
       - name: Wait for Eureka Pod to be Ready
-        run: kubectl wait --for=condition=ready pod -l app=eureka-server --timeout=120s
+        run: kubectl wait --for=condition=ready pod -l app=eureka --timeout=120s
 
       # 9. Deploy Authentification Service
       - name: Deploy Authentification Service to Kubernetes
