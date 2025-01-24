@@ -319,9 +319,7 @@ jobs:
           kubectl get nodes
 
       - name: Create namespaces
-        run: |
-          kubectl create namespace development || true
-          kubectl create namespace production || true
+        run: kubectl create namespace development || true
 
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
@@ -340,7 +338,6 @@ jobs:
         run: |
           kubectl apply -n development -f k8s-manifests/database-deployment.yaml
           kubectl apply -n development -f k8s-manifests/eureka-deployment.yaml
-          kubectl apply -n development -f k8s-manifests/metrics-server-deployment.yaml
 
       - name: Wait for Database and Eureka Pods (Development)
         run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
@@ -388,6 +385,9 @@ jobs:
         run: |
           minikube start --driver=docker
           kubectl get nodes
+
+      - name: Create namespaces
+        run: kubectl create namespace production || true
 
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
