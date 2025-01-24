@@ -65,4 +65,9 @@ public class ListingController {
     public String ping() {
         return "Listing service is running correctly!";
     }
+
+    @GetMapping("/whoami")
+    public String whoami() {
+        return "Team name: Les Ninjas !";
+    }
 }

@@ -32,7 +32,7 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and tag Docker images
+      - name: Build Docker images
         run: |
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest ./microservice-eureka
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest ./database
@@ -41,7 +41,7 @@ jobs:
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest ./microservice-listing
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest ./microservice-tracking
           docker build -t ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest ./microservice-user_management
-
+      
       - name: Push Docker images to registry
         run: |
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
@@ -51,12 +51,6 @@ jobs:
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
           docker push ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
-
-      - name: Install Minikube
-        run: |
-          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
-          sudo mv minikube-linux-amd64 /usr/local/bin/minikube
-          sudo chmod +x /usr/local/bin/minikube
 
   test:
     runs-on: ubuntu-22.04
@@ -79,75 +73,229 @@ jobs:
     runs-on: ubuntu-22.04
     needs: test
     steps:
+      # 1. Check out the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Start Minikube
-        run: minikube start --driver=docker --cpus=4 --memory=8192 --kubernetes-version=v1.21.0
-
-      - name: Set up kubectl context for Minikube
+      # 2. Install Minikube
+      - name: Install Minikube
         run: |
-          kubectl config use-context minikube
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo mv minikube-linux-amd64 /usr/local/bin/minikube
+          sudo chmod +x /usr/local/bin/minikube
 
+      # 3. Start Minikube
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          kubectl get nodes
+
+      # 4. Set up Docker to use Minikube's daemon
       - name: Use Minikube Docker Daemon
         run: eval $(minikube docker-env)
 
-      - name: Load Docker images into Minikube
+      # 5. Pull Docker images from Docker Hub 
+      - name: Pull Docker images
         run: |
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
-          minikube image load registry.k8s.io/metrics-server/metrics-server:v0.7.2
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
-          minikube image load ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
 
-      - name: Apply Kubernetes Database, Eureka and Metric Server manifests
+      # 6. Deploy Database, Eureka Service
+      - name: Deploy Database, Eureka to Kubernetes 
         run: |
-          kubectl apply -f ./k8s-manifests/database-deployment.yaml
-          kubectl apply -f ./k8s-manifests/metrics-server-deployment.yaml
-          kubectl apply -f ./k8s-manifests/eureka-deployment.yaml
+          kubectl apply -f k8s-manifests/database-deployment.yaml
+          kubectl apply -f k8s-manifests/eureka-deployment.yaml
 
-      - name: Wait 90 seconds for Database Pod to be Ready
-        run: |
-          kubectl wait --for=condition=ready pod --all --timeout=90s
+      - name: Wait for Eureka & Database Pods to be Ready
+        run: kubectl wait --for=condition=ready pod --all --timeout=120s
 
-      - name: Apply Kubernetes manifests
+      # 7. Deploy All Microservices
+      # 7.1. Deploy Authentification Service
+      - name: Deploy Authentification Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
+
+      - name: Wait Authentification pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
+
+       # 8. Expose Authentification service and test it
+      - name: Expose Authentification
         run: |
-          kubectl apply -f ./k8s-manifests/authentification-deployment.yaml
+          kubectl expose deployment authentification --type=NodePort --name=authentification-service
+          kubectl expose deployment eureka --type=NodePort --name=eureka-service
+
+      - name: Describe svc
+        run: |
+          kubectl describe svc authentification-service
+          kubectl describe svc eureka-service
+
+      - name: Create debug pod
+        run: kubectl run debug --image=curlimages/curl --restart=Never -- sleep 3600
+
+      - name: Wait for debug pod to be ready
+        run: kubectl wait --for=condition=Ready pod/debug --timeout=60s
+
+      - name: Test service from inside cluster
+        run: |
+          kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
+          kubectl exec debug -- curl http://authentification-service:8081/auth/whoami/
+
+      - name: Get logs for authentification service
+        run: |
+          kubectl logs deployment/authentification
+
+      # 9. Retrieve Minikube IP and test with curl
+      - name: Retrieve Minikube IP and dynamic NodePort
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_AUTHENTIFICATION=$(kubectl get svc authentification-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Authentification: $NODE_PORT_AUTHENTIFICATION"
+          SERVICE_URL_AUTHENTIFICATION="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/ping"
+          echo "Service URL of Authentification: $SERVICE_URL_AUTHENTIFICATION"
+          curl $SERVICE_URL_AUTHENTIFICATION
+          SERVICE_URL_AUTHENTIFICATION_TEAM="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/whoami"
+          echo "Service URL of Authentification Team name: $SERVICE_URL_AUTHENTIFICATION_TEAM"
+          curl $SERVICE_URL_AUTHENTIFICATION_TEAM
+
+      - name: Deploy Booking Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/booking-deployment.yaml
+
+      - name: Wait 30 seconds
+        run: sleep 30
+      
+      - name: Describe Booking pod
+        run: |
+          POD_NAME=$(kubectl get pods -l app=booking -o jsonpath='{.items[0].metadata.name}')
+          echo "Describe Pod: $POD_NAME"
+          kubectl describe pod $POD_NAME
+          echo "Logs of Pod: $POD_NAME"
+          kubectl logs $POD_NAME
+          echo "All pods wide"
+          kubectl get pods -o wide
+
+      - name: Wait Booking pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=booking --timeout=120s
+
+       # 8. Expose Booking service and test it
+      - name: Expose Booking
+        run: kubectl expose deployment booking --type=NodePort --name=booking-service
+
+      - name: Test Booking service from inside cluster
+        run: |
+          kubectl exec debug -- curl http://booking-service:8082/bookings/ping/
+          kubectl exec debug -- curl http://booking-service:8082/bookings/whoami/
+
+      - name: Retrieve Minikube IP and dynamic NodePort Booking
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_BOOKING=$(kubectl get svc booking-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Booking: $NODE_PORT_BOOKING"
+          SERVICE_URL_BOOKING="http://$MINIKUBE_IP:$NODE_PORT_BOOKING/bookings/ping"
+          echo "Service URL of Booking: $SERVICE_URL_BOOKING"
+          curl $SERVICE_URL_BOOKING
+          SERVICE_URL_BOOKING_TEAM="http://$MINIKUBE_IP:$NODE_PORT_BOOKING/bookings/whoami"
+          echo "Service URL of Booking Team Name: $SERVICE_URL_BOOKING_TEAM"
+          curl $SERVICE_URL_BOOKING_TEAM
+
+      - name: Deploy Listing Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/listing-deployment.yaml
 
       - name: Wait 30 seconds
         run: sleep 30
 
-      - name: Expose service in Minikube
+      - name: Wait Listing pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=listing --timeout=120s
+
+       # 8. Expose Listing service and test it
+      - name: Expose Listing
+        run: kubectl expose deployment listing --type=NodePort --name=listing-service
+
+      - name: Get logs for listing service
         run: |
-          kubectl expose deployment authentification --type=NodePort --name=authentification-service
-          minikube service authentification-service --url &
-          export SERVICE_URL=$(minikube service authentification-service --url)
-          echo "SERVICE_URL=$SERVICE_URL" >> $GITHUB_ENV
+          kubectl logs deployment/listing
 
-      - name: Get all pods 
-        run: kubectl get pod -A
-
-      - name: Logs of authentification pod
+      - name: Test Listing service from inside cluster
         run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl logs $POD_NAME
-          kubectl describe pod $POD_NAME
+          kubectl exec debug -- curl http://listing-service:8083/listings/ping/
+          kubectl exec debug -- curl http://listing-service:8083/listings/whoami/
 
-      - name: Wait authentification pod to be ready
-        run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=90s
-
-      - name: Logs of authentification pod 2
+      - name: Retrieve Minikube IP and dynamic NodePort Listing
         run: |
-          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
-          echo "Fetching logs for Pod: $POD_NAME"
-          echo "========== POD LOGS =========="
-          kubectl logs $POD_NAME
-          kubectl get pod -A
-          kubectl describe pod $POD_NAME 
-          kubectl get svc authentification-service
-          kubectl get pods -l app=authentification
-          kubectl describe pod
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_LISTING=$(kubectl get svc listing-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Listing: $NODE_PORT_LISTING"
+          SERVICE_URL_LISTING="http://$MINIKUBE_IP:$NODE_PORT_LISTING/listings/ping"
+          echo "Service URL of Listing: $SERVICE_URL_LISTING"
+          curl $SERVICE_URL_LISTING
+          SERVICE_URL_LISTING_TEAM="http://$MINIKUBE_IP:$NODE_PORT_LISTING/listings/whoami"
+          echo "Service URL of Listing Team Name: $SERVICE_URL_LISTING_TEAM"
+          curl $SERVICE_URL_LISTING_TEAM
+
+      - name: Deploy Tracking Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/tracking-deployment.yaml
+
+      - name: Wait 30 seconds
+        run: sleep 30
+
+      - name: Wait Tracking pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=tracking --timeout=120s
+
+       # 8. Expose Tracking service and test it
+      - name: Expose Tracking
+        run: kubectl expose deployment tracking --type=NodePort --name=tracking-service
+
+      - name: Test Tracking service from inside cluster
+        run: |
+          kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
+          kubectl exec debug -- curl http://tracking-service:8084/tracking/whoami/
+
+      - name: Retrieve Minikube IP and dynamic NodePort Tracking
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_TRACKING=$(kubectl get svc tracking-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort Tracking: $NODE_PORT_TRACKING"
+          SERVICE_URL_TRACKING="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/ping"
+          echo "Service URL of Tracking: $SERVICE_URL_TRACKING"
+          curl $SERVICE_URL_TRACKING
+          SERVICE_URL_TRACKING_TEAM="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/whoami"
+          echo "Service URL of Tracking Team Name: $SERVICE_URL_TRACKING_TEAM"
+          curl $SERVICE_URL_TRACKING_TEAM
+
+      - name: Deploy User Management Service to Kubernetes
+        run: kubectl apply -f k8s-manifests/user_management-deployment.yaml
+
+      - name: Wait 30 seconds
+        run: sleep 30
+
+      - name: Wait User Management pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=user-management --timeout=120s
+
+       # 8. Expose User Management service and test it
+      - name: Expose User Management
+        run: kubectl expose deployment user-management --type=NodePort --name=user-management-service
+
+      - name: Test User Management service from inside cluster
+        run: |
+          kubectl exec debug -- curl http://user-management-service:8085/users/ping/
+          kubectl exec debug -- curl http://user-management-service:8085/users/whoami/
+
+      - name: Retrieve Minikube IP and dynamic NodePort User Management
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          echo "Minikube IP: $MINIKUBE_IP"
+          NODE_PORT_USER_MANAGEMENT=$(kubectl get svc user-management-service -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "NodePort User Management: $NODE_PORT_USER_MANAGEMENT"
+          SERVICE_URL_USER_MANAGEMENT="http://$MINIKUBE_IP:$NODE_PORT_USER_MANAGEMENT/users/ping"
+          echo "Service URL of User Management: $SERVICE_URL_USER_MANAGEMENT"
+          curl $SERVICE_URL_USER_MANAGEMENT
+          SERVICE_URL_USER_MANAGEMENT_TEAM="http://$MINIKUBE_IP:$NODE_PORT_USER_MANAGEMENT/users/whoami"
+          echo "Service URL of User Management Team Name: $SERVICE_URL_USER_MANAGEMENT_TEAM"
+          curl $SERVICE_URL_USER_MANAGEMENT_TEAM

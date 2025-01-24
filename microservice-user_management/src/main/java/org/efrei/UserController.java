@@ -53,4 +53,9 @@ public class UserController {
     public String ping() {
         return "User Management service is running correctly !";
     }
+
+    @GetMapping("/whoami")
+    public String whoami() {
+        return "Team name: Les Ninjas !";
+    }
 }

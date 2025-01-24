@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Service
-@FeignClient(name = "microservice-authentification")
+@FeignClient(name = "authentification", url = "http://authentification:8081")
 public interface AuthServiceClient {
     @GetMapping("/auth/checkConnection/{userId}")
     Boolean isUserLoggedIn(@RequestParam("userId") Long userId);
