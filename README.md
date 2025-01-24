@@ -12,7 +12,6 @@ Ce projet implémente une architecture de microservices pour une application de 
 - [Configuration](#configuration)
 - [Contributions](#contributions)
 - [Licence](#licence)
-- [Auteurs](#auteurs)
 - [Remerciements](#remerciements)
 
 ## Introduction
@@ -41,6 +40,9 @@ Le projet s'aide de Docker pour construire les images et de Kubernetes pour dép
 
 ![image](https://github.com/user-attachments/assets/cf96a93a-bc99-4be3-8d73-7620e844d811)
 
+L'état actuel de la pipeline CI/CD qui tourne sur GitHub Actions.
+
+![image](https://github.com/user-attachments/assets/57a22940-ad07-42e0-9e4b-a030482714cd)
 
 ## Prérequis
 
