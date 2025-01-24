@@ -35,6 +35,12 @@ Le projet s'aide de Docker pour construire les images et de Kubernetes pour dép
 
 ![Design Of The Build And Deployment Workflow](https://github.com/user-attachments/assets/e6c74523-39f1-491b-8247-b43c9e1ff74b)
 
+## Github Actions Pipeline CI/CD
+
+À chaque push ou pull request, les développeurs auront accès à une pipeline qui effectuera le build, les tests et le déploiement en environnement de développement (où des tests Curl vers les microservices seront réalisés), ainsi qu'en environnement de production.
+
+![image](https://github.com/user-attachments/assets/cf96a93a-bc99-4be3-8d73-7620e844d811)
+
 
 ## Prérequis
 
