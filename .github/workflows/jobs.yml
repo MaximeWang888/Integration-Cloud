@@ -111,13 +111,24 @@ jobs:
           kubectl apply -f k8s-manifests/database-deployment.yaml
           kubectl apply -f k8s-manifests/eureka-deployment.yaml
 
+      - name: Wait 30 seconds
+        run: sleep 30
+        
       - name: Wait for Eureka & Database Pods to be Ready
         run: kubectl wait --for=condition=ready pod --all --timeout=120s
+
+      - name: Check secrets k8s
+        run: kubectl get secret mysql-credentials -o yaml
 
       # 7. Deploy All Microservices
       # 7.1. Deploy Authentification Service
       - name: Deploy Authentification Service to Kubernetes
         run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
+
+      - name: Check env variables
+        run: |
+          POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec $POD_NAME -- printenv | grep SPRING_DATASOURCE
 
       - name: Wait Authentification pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
