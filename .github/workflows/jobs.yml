@@ -166,8 +166,8 @@ jobs:
       - name: Deploy Booking Service to Kubernetes
         run: kubectl apply -f k8s-manifests/booking-deployment.yaml
 
-      - name: Wait 30 seconds
-        run: sleep 30
+      - name: Wait Booking pod to be ready
+        run: kubectl wait --for=condition=ready pod -l app=booking --timeout=120s
       
       - name: Describe Booking pod
         run: |
@@ -178,9 +178,6 @@ jobs:
           kubectl logs $POD_NAME
           echo "All pods wide"
           kubectl get pods -o wide
-
-      - name: Wait Booking pod to be ready
-        run: kubectl wait --for=condition=ready pod -l app=booking --timeout=120s
 
        # 8. Expose Booking service and test it
       - name: Expose Booking
