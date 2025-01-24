@@ -342,6 +342,12 @@ jobs:
       - name: Wait for Database and Eureka Pods (Development)
         run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
 
+      - name: Create debug pod
+        run: kubectl run debug --image=curlimages/curl --restart=Never -- sleep 3600
+
+      - name: Wait for debug pod to be ready
+        run: kubectl wait --for=condition=Ready pod/debug --timeout=60s
+
       - name: Deploy Services to Development
         run: |
           kubectl apply -n development -f k8s-manifests/authentification-deployment.yaml
