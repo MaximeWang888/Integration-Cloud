@@ -383,7 +383,7 @@ jobs:
 
   deploy-production:
     runs-on: ubuntu-22.04
-    needs: deploy-production
+    needs: deploy-development
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
