@@ -128,10 +128,11 @@ jobs:
       - name: Wait 30 seconds
         run: sleep 30
 
-      - name: Check env variables
+      - name: Check env variables & logs
         run: |
           POD_NAME=$(kubectl get pods -l app=authentification -o jsonpath='{.items[0].metadata.name}')
           kubectl exec $POD_NAME -- printenv | grep SPRING_DATASOURCE
+          kubectl logs $POD_NAME
 
       - name: Wait Authentification pod to be ready
         run: kubectl wait --for=condition=ready pod -l app=authentification --timeout=120s
