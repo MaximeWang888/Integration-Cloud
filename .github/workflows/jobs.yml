@@ -113,7 +113,7 @@ jobs:
 
       - name: Wait 30 seconds
         run: sleep 30
-        
+
       - name: Wait for Eureka & Database Pods to be Ready
         run: kubectl wait --for=condition=ready pod --all --timeout=120s
 
@@ -124,6 +124,9 @@ jobs:
       # 7.1. Deploy Authentification Service
       - name: Deploy Authentification Service to Kubernetes
         run: kubectl apply -f k8s-manifests/authentification-deployment.yaml
+
+      - name: Wait 30 seconds
+        run: sleep 30
 
       - name: Check env variables
         run: |
