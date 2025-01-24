@@ -105,11 +105,12 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
           docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
 
-      # 6. Deploy Database, Eureka Service
+      # 6. Deploy Database, Eureka, Metric Server Service
       - name: Deploy Database, Eureka to Kubernetes 
         run: |
           kubectl apply -f k8s-manifests/database-deployment.yaml
           kubectl apply -f k8s-manifests/eureka-deployment.yaml
+          kubectl apply -f k8s-manifests/metrics-server-deployment.yaml
 
       - name: Wait for Eureka & Database Pods to be Ready
         run: kubectl wait --for=condition=ready pod --all --timeout=120s
