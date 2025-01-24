@@ -3,7 +3,7 @@ name: Microservices Airbnb Jobs
 on:
   push:
     branches:
-      - main
+      - "*"
   pull_request:
     branches: 
       - main
