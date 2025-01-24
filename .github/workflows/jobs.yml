@@ -350,6 +350,9 @@ jobs:
           kubectl apply -n development -f k8s-manifests/tracking-deployment.yaml
           kubectl apply -n development -f k8s-manifests/user_management-deployment.yaml
 
+      - name: Wait 30 seconds
+        run: sleep 30
+
       - name: Wait for Services to be Ready (Development)
         run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
 
