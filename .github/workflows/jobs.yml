@@ -299,3 +299,118 @@ jobs:
           SERVICE_URL_USER_MANAGEMENT_TEAM="http://$MINIKUBE_IP:$NODE_PORT_USER_MANAGEMENT/users/whoami"
           echo "Service URL of User Management Team Name: $SERVICE_URL_USER_MANAGEMENT_TEAM"
           curl $SERVICE_URL_USER_MANAGEMENT_TEAM
+
+  deploy-development:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo mv minikube-linux-amd64 /usr/local/bin/minikube
+          sudo chmod +x /usr/local/bin/minikube
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          kubectl get nodes
+
+      - name: Create namespaces
+        run: |
+          kubectl create namespace development || true
+          kubectl create namespace production || true
+
+      - name: Use Minikube Docker Daemon
+        run: eval $(minikube docker-env)
+
+      - name: Pull Docker images
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
+
+      - name: Deploy Database and Eureka to Development
+        run: |
+          kubectl apply -n development -f k8s-manifests/database-deployment.yaml
+          kubectl apply -n development -f k8s-manifests/eureka-deployment.yaml
+          kubectl apply -n development -f k8s-manifests/metrics-server-deployment.yaml
+
+      - name: Wait for Database and Eureka Pods (Development)
+        run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
+
+      - name: Deploy Services to Development
+        run: |
+          kubectl apply -n development -f k8s-manifests/authentification-deployment.yaml
+          kubectl apply -n development -f k8s-manifests/booking-deployment.yaml
+          kubectl apply -n development -f k8s-manifests/listing-deployment.yaml
+          kubectl apply -n development -f k8s-manifests/tracking-deployment.yaml
+          kubectl apply -n development -f k8s-manifests/user_management-deployment.yaml
+
+      - name: Wait for Services to be Ready (Development)
+        run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
+
+      - name: Expose Services in Development
+        run: |
+          kubectl expose deployment authentification --namespace=development --type=NodePort --name=authentification-service
+          kubectl expose deployment booking --namespace=development --type=NodePort --name=booking-service
+          kubectl expose deployment listing --namespace=development --type=NodePort --name=listing-service
+          kubectl expose deployment tracking --namespace=development --type=NodePort --name=tracking-service
+          kubectl expose deployment user-management --namespace=development --type=NodePort --name=user-management-service
+
+      - name: Test Services in Development
+        run: |
+          MINIKUBE_IP=$(minikube ip)
+          NODE_PORT_AUTH=$(kubectl get svc authentification-service -n development -o jsonpath='{.spec.ports[0].nodePort}')
+          echo "Auth Service: http://$MINIKUBE_IP:$NODE_PORT_AUTH/auth/ping"
+          curl http://$MINIKUBE_IP:$NODE_PORT_AUTH/auth/ping
+
+  deploy-production:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Minikube
+        run: |
+          curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+          sudo mv minikube-linux-amd64 /usr/local/bin/minikube
+          sudo chmod +x /usr/local/bin/minikube
+
+      - name: Start Minikube
+        run: |
+          minikube start --driver=docker
+          kubectl get nodes
+
+      - name: Use Minikube Docker Daemon
+        run: eval $(minikube docker-env)
+
+      - name: Pull Docker images
+        run: |
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-eureka:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-database:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-authentification:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-booking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-listing:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
+          docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
+
+      - name: Deploy Services to Production
+        run: |
+          kubectl apply -n production -f k8s-manifests/database-deployment.yaml
+          kubectl apply -n production -f k8s-manifests/eureka-deployment.yaml
+          kubectl apply -n production -f k8s-manifests/authentification-deployment.yaml
+          kubectl apply -n production -f k8s-manifests/booking-deployment.yaml
+          kubectl apply -n production -f k8s-manifests/listing-deployment.yaml
+          kubectl apply -n production -f k8s-manifests/tracking-deployment.yaml
+          kubectl apply -n production -f k8s-manifests/user_management-deployment.yaml
+
+      - name: Wait for Services to be Ready (Production)
+        run: kubectl wait --namespace production --for=condition=ready pod --all --timeout=120s
