@@ -35,6 +35,11 @@ public class AuthController {
         return "Authentication service is running correctly!";
     }
 
+    @GetMapping("/whoami")
+    public String whoami() {
+        return "Team name: Les Ninjas !";
+    }
+
     @GetMapping("/checkConnection/{userId}")
     public boolean isUserConnected(@PathVariable Long userId) {
         return userRepository.findById(userId).get().getIsConnected();

@@ -140,7 +140,9 @@ jobs:
         run: kubectl wait --for=condition=Ready pod/debug --timeout=60s
 
       - name: Test service from inside cluster
-        run: kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
+        run: |
+          kubectl exec debug -- curl http://authentification-service:8081/auth/ping/
+          kubectl exec debug -- curl http://authentification-service:8081/auth/whoami/
 
       - name: Get logs for authentification service
         run: |
@@ -156,6 +158,9 @@ jobs:
           SERVICE_URL_AUTHENTIFICATION="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/ping"
           echo "Service URL of Authentification: $SERVICE_URL_AUTHENTIFICATION"
           curl $SERVICE_URL_AUTHENTIFICATION
+          SERVICE_URL_AUTHENTIFICATION_TEAM="http://$MINIKUBE_IP:$NODE_PORT_AUTHENTIFICATION/auth/whoami"
+          echo "Service URL of Authentification Team name: $SERVICE_URL_AUTHENTIFICATION_TEAM"
+          curl $SERVICE_URL_AUTHENTIFICATION_TEAM
 
       - name: Deploy Booking Service to Kubernetes
         run: kubectl apply -f k8s-manifests/booking-deployment.yaml
@@ -181,7 +186,9 @@ jobs:
         run: kubectl expose deployment booking --type=NodePort --name=booking-service
 
       - name: Test Booking service from inside cluster
-        run: kubectl exec debug -- curl http://booking-service:8082/bookings/ping/
+        run: |
+          kubectl exec debug -- curl http://booking-service:8082/bookings/ping/
+          kubectl exec debug -- curl http://booking-service:8082/bookings/whoami/
 
       - name: Retrieve Minikube IP and dynamic NodePort Booking
         run: |
@@ -192,6 +199,9 @@ jobs:
           SERVICE_URL_BOOKING="http://$MINIKUBE_IP:$NODE_PORT_BOOKING/bookings/ping"
           echo "Service URL of Booking: $SERVICE_URL_BOOKING"
           curl $SERVICE_URL_BOOKING
+          SERVICE_URL_BOOKING_TEAM="http://$MINIKUBE_IP:$NODE_PORT_BOOKING/bookings/whoami"
+          echo "Service URL of Booking Team Name: $SERVICE_URL_BOOKING_TEAM"
+          curl $SERVICE_URL_BOOKING_TEAM
 
       - name: Deploy Listing Service to Kubernetes
         run: kubectl apply -f k8s-manifests/listing-deployment.yaml
@@ -210,8 +220,10 @@ jobs:
         run: |
           kubectl logs deployment/listing
 
-      # - name: Test Listing service from inside cluster
-      #   run: kubectl exec debug -- curl http://listing-service:8083/listings/ping/
+      - name: Test Listing service from inside cluster
+        run: |
+          kubectl exec debug -- curl http://listing-service:8083/listings/ping/
+          kubectl exec debug -- curl http://listing-service:8083/listings/whoami/
 
       - name: Retrieve Minikube IP and dynamic NodePort Listing
         run: |
@@ -222,6 +234,9 @@ jobs:
           SERVICE_URL_LISTING="http://$MINIKUBE_IP:$NODE_PORT_LISTING/listings/ping"
           echo "Service URL of Listing: $SERVICE_URL_LISTING"
           curl $SERVICE_URL_LISTING
+          SERVICE_URL_LISTING_TEAM="http://$MINIKUBE_IP:$NODE_PORT_LISTING/listings/whoami"
+          echo "Service URL of Listing Team Name: $SERVICE_URL_LISTING_TEAM"
+          curl $SERVICE_URL_LISTING_TEAM
 
       - name: Deploy Tracking Service to Kubernetes
         run: kubectl apply -f k8s-manifests/tracking-deployment.yaml
@@ -237,7 +252,9 @@ jobs:
         run: kubectl expose deployment tracking --type=NodePort --name=tracking-service
 
       - name: Test Tracking service from inside cluster
-        run: kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
+        run: |
+          kubectl exec debug -- curl http://tracking-service:8084/tracking/ping/
+          kubectl exec debug -- curl http://tracking-service:8084/tracking/whoami/
 
       - name: Retrieve Minikube IP and dynamic NodePort Tracking
         run: |
@@ -248,7 +265,9 @@ jobs:
           SERVICE_URL_TRACKING="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/ping"
           echo "Service URL of Tracking: $SERVICE_URL_TRACKING"
           curl $SERVICE_URL_TRACKING
-
+          SERVICE_URL_TRACKING_TEAM="http://$MINIKUBE_IP:$NODE_PORT_TRACKING/tracking/whoami"
+          echo "Service URL of Tracking Team Name: $SERVICE_URL_TRACKING_TEAM"
+          curl $SERVICE_URL_TRACKING_TEAM
 
       - name: Deploy User Management Service to Kubernetes
         run: kubectl apply -f k8s-manifests/user_management-deployment.yaml
@@ -264,7 +283,9 @@ jobs:
         run: kubectl expose deployment user-management --type=NodePort --name=user-management-service
 
       - name: Test User Management service from inside cluster
-        run: kubectl exec debug -- curl http://user-management-service:8085/users/ping/
+        run: |
+          kubectl exec debug -- curl http://user-management-service:8085/users/ping/
+          kubectl exec debug -- curl http://user-management-service:8085/users/whoami/
 
       - name: Retrieve Minikube IP and dynamic NodePort User Management
         run: |
@@ -275,3 +296,6 @@ jobs:
           SERVICE_URL_USER_MANAGEMENT="http://$MINIKUBE_IP:$NODE_PORT_USER_MANAGEMENT/users/ping"
           echo "Service URL of User Management: $SERVICE_URL_USER_MANAGEMENT"
           curl $SERVICE_URL_USER_MANAGEMENT
+          SERVICE_URL_USER_MANAGEMENT_TEAM="http://$MINIKUBE_IP:$NODE_PORT_USER_MANAGEMENT/users/whoami"
+          echo "Service URL of User Management Team Name: $SERVICE_URL_USER_MANAGEMENT_TEAM"
+          curl $SERVICE_URL_USER_MANAGEMENT_TEAM

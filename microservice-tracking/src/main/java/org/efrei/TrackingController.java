@@ -25,5 +25,10 @@ public class TrackingController {
     public String ping() {
         return "Tracking service is running correctly !";
     }
+
+    @GetMapping("/whoami") 
+    public String whoami() {
+        return "Team name: Les Ninjas !";
+    }
 }
 

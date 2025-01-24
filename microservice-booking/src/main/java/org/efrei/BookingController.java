@@ -53,8 +53,14 @@ public class BookingController {
     public <userId> Boolean isUserLoggedIn(@PathVariable Long userId) {
         return authClient.isUserLoggedIn(userId);
     }
+    
     @GetMapping("/ping")
     public String ping() {
         return "Booking service is running correctly!";
+    }
+
+    @GetMapping("/whoami")
+    public String whoami() {
+        return "Team name: Les Ninjas !";
     }
 }
