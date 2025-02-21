@@ -2,7 +2,12 @@ spring:
   application:
     name: microservice-tracking
   cloud:
-    loadbalancer:
+    kubernetes:
+      discovery:
+        enabled: true
+      config:
+        enabled: true 
+    loadbalancer: 
       enabled: true
   datasource:
     url: jdbc:mysql://database:3306/microservice_db

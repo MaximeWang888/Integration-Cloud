@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: listing
+  name: booking-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: listing
+      app: booking-service
   template:
     metadata:
       labels:
-        app: listing
+        app: booking-service
     spec:
       containers:
-        - name: listing
-          image: 888maximewang/microservice-airbnb-listing:latest
+        - name: booking-service
+          image: 888maximewang/microservice-airbnb-booking:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8083
+            - containerPort: 8082
           # resources:
           #   requests:
           #     cpu: "200m"         
@@ -27,8 +27,8 @@ spec:
           #     memory: "512Mi" 
           readinessProbe:
             httpGet:
-              path: /listings/ping
-              port: 8083
+              path: /bookings/ping
+              port: 8082
             initialDelaySeconds: 20
             periodSeconds: 5
             timeoutSeconds: 2
@@ -37,27 +37,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: listing
+  name: booking-service
 spec:
   selector:
-    app: listing
+    app: booking-service
   ports:
     - protocol: TCP
-      port: 8083
-      targetPort: 8083
-      nodePort: 32766
-  type: NodePort
+      port: 8082
+      targetPort: 8082
+      nodePort: 30002
+  type: ClusterIP
 ---
 # apiVersion: autoscaling/v2
 # kind: HorizontalPodAutoscaler
 # metadata:
-#   name: listing-hpa
+#   name: booking-hpa
 #   namespace: default
 # spec:
 #   scaleTargetRef:
 #     apiVersion: apps/v1
 #     kind: Deployment
-#     name: listing
+#     name: booking
 #   minReplicas: 1
 #   maxReplicas: 5
 #   metrics:

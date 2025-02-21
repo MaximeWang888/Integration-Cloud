@@ -1,0 +1,24 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: auth-service
+          uri: http://auth-service:8080
+          predicates:
+            - Path=/api/auth/**
+        - id: booking-service
+          uri: http://booking-service:8080
+          predicates:
+            - Path=/api/bookings/**
+        - id: user-management-service
+          uri: http://user-management-service:8080
+          predicates:
+            - Path=/api/users/** 
+        - id: listing-service
+          uri: http://listing-service:8080
+          predicates:
+            - Path=/api/listings/**
+        - id: tracking-service
+          uri: http://tracking-service:8080
+          predicates:
+            - Path=/api/tracking/**

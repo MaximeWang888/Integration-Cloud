@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: authentification
+  name: auth-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: authentification
+      app: auth-service
   template:
     metadata:
       labels:
-        app: authentification
+        app: auth-service
     spec:
       containers:
-        - name: authentification
+        - name: auth-service
           image: 888maximewang/microservice-airbnb-authentification:latest
           imagePullPolicy: IfNotPresent
           ports:
@@ -37,16 +37,16 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: authentification
+  name: auth-service
 spec:
   selector:
-    app: authentification
+    app: auth-service
   ports:
     - protocol: TCP
       port: 8081
       targetPort: 8081
       nodePort: 30001
-  type: NodePort
+  type: ClusterIP
 ---
 # apiVersion: autoscaling/v2
 # kind: HorizontalPodAutoscaler

@@ -1,34 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: booking
+  name: user-management-service
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: booking
+      app: user-management-service
   template:
     metadata:
       labels:
-        app: booking
+        app: user-management-service
     spec:
       containers:
-        - name: booking
-          image: 888maximewang/microservice-airbnb-booking:latest
+        - name: user-management-service
+          image: 888maximewang/microservice-airbnb-user_management:latest
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8082
+            - containerPort: 8085
           # resources:
           #   requests:
           #     cpu: "200m"         
           #     memory: "256Mi"     
           #   limits:
           #     cpu: "500m"         
-          #     memory: "512Mi" 
+          #     memory: "512Mi"   
           readinessProbe:
             httpGet:
-              path: /bookings/ping
-              port: 8082
+              path: /users/ping
+              port: 8085
             initialDelaySeconds: 20
             periodSeconds: 5
             timeoutSeconds: 2
@@ -37,27 +37,27 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: booking
+  name: user-management-service
 spec:
   selector:
-    app: booking
+    app: user-management-service
   ports:
     - protocol: TCP
-      port: 8082
-      targetPort: 8082
-      nodePort: 30002
-  type: NodePort
+      port: 8085
+      targetPort: 8085
+      nodePort: 30005
+  type: ClusterIP 
 ---
 # apiVersion: autoscaling/v2
 # kind: HorizontalPodAutoscaler
 # metadata:
-#   name: booking-hpa
+#   name: user-management-hpa
 #   namespace: default
 # spec:
 #   scaleTargetRef:
 #     apiVersion: apps/v1
 #     kind: Deployment
-#     name: booking
+#     name: user-management
 #   minReplicas: 1
 #   maxReplicas: 5
 #   metrics:

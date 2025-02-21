@@ -1,6 +1,12 @@
 spring:
   application:
     name: microservice-authentification
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+      config:
+        enabled: true 
   datasource:
     url: jdbc:mysql://database:3306/microservice_db
     username: user
@@ -25,13 +31,13 @@ spring:
 server:
   port: 8081
 
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://eureka.default.svc.cluster.local:8761/eureka/
-  instance:
-    prefer-ip-address: true
-    instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
+# eureka:
+#   client:
+#     serviceUrl:
+#       defaultZone: http://eureka.default.svc.cluster.local:8761/eureka/
+#   instance:
+#     prefer-ip-address: true
+#     instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
 
 logging:
   level:

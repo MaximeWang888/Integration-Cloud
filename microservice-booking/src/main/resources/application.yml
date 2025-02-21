@@ -2,6 +2,11 @@ spring:
   application:
     name: microservice-booking
   cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+      config:
+        enabled: true 
     loadbalancer:
       enabled: true
   datasource:
