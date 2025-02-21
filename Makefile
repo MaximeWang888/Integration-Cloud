@@ -1,147 +1,115 @@
-# Cleaning 
-down:
-	docker compose --profile $(profile) down
+# Variables
+DOCKER_COMPOSE = docker compose
+KUBECTL = kubectl
+PROFILE ?= all
+NAMESPACE ?= development
 
-# Building
-build:
-	docker compose --profile $(profile) build
+# Colors for output
+BLUE := \033[1;34m
+GREEN := \033[1;32m
+RED := \033[1;31m
+RESET := \033[0m
 
-# Up
-up:
-	docker compose --profile $(profile) up -d
+# Docker Compose Commands
+.PHONY: dc-build dc-up dc-down dc-logs dc-ps
 
+dc-build:
+	@echo "$(BLUE)Building Docker images with profile $(PROFILE)...$(RESET)"
+	$(DOCKER_COMPOSE) --profile $(PROFILE) build
 
-# Apply the Kubernetes Deployment files on infra services
-up-infra-k8s:
-	kubectl apply -f k8s-manifests/eureka-deployment.yaml
-	kubectl apply -f k8s-manifests/database-deployment.yaml
-	kubectl apply -f k8s-manifests/metrics-server-deployment.yaml
+dc-up:
+	@echo "$(BLUE)Starting services with profile $(PROFILE)...$(RESET)"
+	$(DOCKER_COMPOSE) --profile $(PROFILE) up -d
+	@echo "$(GREEN)Services started successfully!$(RESET)"
 
-# Apply the Kubernetes Deployment files for each microservices
-up-microservices-k8s:
-	kubectl apply -f k8s-manifests/authentification-deployment.yaml
-	kubectl apply -f k8s-manifests/booking-deployment.yaml
-	kubectl apply -f k8s-manifests/listing-deployment.yaml
-	kubectl apply -f k8s-manifests/tracking-deployment.yaml
-	kubectl apply -f k8s-manifests/user_management-deployment.yaml
+dc-down:
+	@echo "$(BLUE)Stopping services...$(RESET)"
+	$(DOCKER_COMPOSE) --profile $(PROFILE) down
+	@echo "$(GREEN)Services stopped successfully!$(RESET)"
 
+dc-logs:
+	@echo "$(BLUE)Showing logs...$(RESET)"
+	$(DOCKER_COMPOSE) --profile $(PROFILE) logs -f
 
-# Delete the Kubernetes resources (Infra services)
-down-infra-k8s:
-	kubectl delete -f k8s-manifests/eureka-deployment.yaml
-	kubectl delete -f k8s-manifests/database-deployment.yaml
-	kubectl delete -f k8s-manifests/metrics-server-deployment.yaml
+dc-ps:
+	@echo "$(BLUE)Showing running services...$(RESET)"
+	$(DOCKER_COMPOSE) ps
 
-# Delete the Kubernetes resources (microservices)
-down-microservices-k8s:
-	kubectl delete -f k8s-manifests/authentification-deployment.yaml
-	kubectl delete -f k8s-manifests/booking-deployment.yaml
-	kubectl delete -f k8s-manifests/listing-deployment.yaml
-	kubectl delete -f k8s-manifests/tracking-deployment.yaml
-	kubectl delete -f k8s-manifests/user_management-deployment.yaml
+# Kubernetes Commands
+.PHONY: k8s-apply-all k8s-delete-all k8s-status k8s-logs k8s-port-forward
 
+k8s-apply-all:
+	@echo "$(BLUE)Applying all Kubernetes resources in namespace $(NAMESPACE)...$(RESET)"
+	$(KUBECTL) create namespace $(NAMESPACE) --dry-run=client -o yaml | $(KUBECTL) apply -f -
+	$(KUBECTL) apply -f kubernetes/api-gateway-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/database-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/authentification-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/booking-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/listing-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/tracking-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/user_management-deployment.yml -n $(NAMESPACE)
+	@echo "$(GREEN)All resources applied successfully!$(RESET)"
 
-# Apply Individually Each Kubernetes Deployment files
-up-eureka:
-	kubectl apply -f k8s-manifests/eureka-deployment.yaml
+k8s-delete-all:
+	@echo "$(RED)Deleting all Kubernetes resources in namespace $(NAMESPACE)...$(RESET)"
+	$(KUBECTL) delete -f kubernetes/ -n $(NAMESPACE) --ignore-not-found
+	@echo "$(GREEN)All resources deleted successfully!$(RESET)"
 
-up-database:
-	kubectl apply -f k8s-manifests/database-deployment.yaml
+k8s-status:
+	@echo "$(BLUE)Checking Kubernetes resources status...$(RESET)"
+	@echo "\nPods:"
+	$(KUBECTL) get pods -n $(NAMESPACE)
+	@echo "\nServices:"
+	$(KUBECTL) get svc -n $(NAMESPACE)
+	@echo "\nDeployments:"
+	$(KUBECTL) get deployments -n $(NAMESPACE)
 
-up-authentification:
-	kubectl apply -f k8s-manifests/authentification-deployment.yaml
+k8s-logs:
+	@echo "$(BLUE)Fetching logs for service $(service)...$(RESET)"
+	$(KUBECTL) logs -f deployment/$(service) -n $(NAMESPACE)
 
-up-booking:
-	kubectl apply -f k8s-manifests/booking-deployment.yaml
+k8s-port-forward:
+	@echo "$(BLUE)Setting up port forwarding for API Gateway...$(RESET)"
+	$(KUBECTL) port-forward svc/api-gateway 8080:80 -n $(NAMESPACE)
 
-up-listing:
-	kubectl apply -f k8s-manifests/listing-deployment.yaml
+# Development Commands
+.PHONY: dev prod clean
 
-up-tracking:
-	kubectl apply -f k8s-manifests/tracking-deployment.yaml
+dev: export NAMESPACE=development
+dev: k8s-apply-all
 
-up-user-management:
-	kubectl apply -f k8s-manifests/user_management-deployment.yaml
+prod: export NAMESPACE=production
+prod: k8s-apply-all
 
+clean:
+	@echo "$(RED)Cleaning up all resources...$(RESET)"
+	-$(MAKE) dc-down
+	-$(MAKE) k8s-delete-all NAMESPACE=development
+	-$(MAKE) k8s-delete-all NAMESPACE=production
+	@echo "$(GREEN)Cleanup completed!$(RESET)"
 
-# Delete Individually Each Kubernetes Deployment files
-down-eureka:
-	kubectl delete -f k8s-manifests/eureka-deployment.yaml
+# Help
+.PHONY: help
+help:
+	@echo "$(BLUE)Available commands:$(RESET)"
+	@echo "$(GREEN)Docker Compose commands:$(RESET)"
+	@echo "  dc-build         - Build Docker images"
+	@echo "  dc-up           - Start services"
+	@echo "  dc-down         - Stop services"
+	@echo "  dc-logs         - Show service logs"
+	@echo "  dc-ps           - List running services"
+	@echo "\n$(GREEN)Kubernetes commands:$(RESET)"
+	@echo "  k8s-apply-all   - Apply all K8s resources"
+	@echo "  k8s-delete-all  - Delete all K8s resources"
+	@echo "  k8s-status      - Show K8s resources status"
+	@echo "  k8s-logs        - Show logs for a service"
+	@echo "  k8s-port-forward- Forward API Gateway port"
+	@echo "\n$(GREEN)Environment commands:$(RESET)"
+	@echo "  dev            - Deploy to development"
+	@echo "  prod           - Deploy to production"
+	@echo "  clean          - Clean up all resources"
+	@echo "\nUse PROFILE=<profile> to specify Docker Compose profile"
+	@echo "Use NAMESPACE=<namespace> to specify Kubernetes namespace"
 
-down-database:
-	kubectl delete -f k8s-manifests/database-deployment.yaml
-
-down-authentification:
-	kubectl delete -f k8s-manifests/authentification-deployment.yaml
-
-down-booking:
-	kubectl delete -f k8s-manifests/booking-deployment.yaml
-
-down-listing:
-	kubectl delete -f k8s-manifests/listing-deployment.yaml
-
-down-tracking:
-	kubectl delete -f k8s-manifests/tracking-deployment.yaml
-
-down-user-management:
-	kubectl delete -f k8s-manifests/user_management-deployment.yaml
-
-
-# Kubernetes Port Forwarding for all services in one command (background execution)
-up-port-forward-all:
-	@echo "Starting port-forwarding for all services..."
-	@start /B kubectl port-forward svc/eureka 8761:8761 > .logs/eureka-port-forward.log 2>&1
-	@start /B kubectl port-forward svc/database 3306:3306 > .logs/database-port-forward.log 2>&1
-	@start /B kubectl port-forward svc/authentification 8081:8081 > .logs/authentification-port-forward.log 2>&1
-	@start /B kubectl port-forward svc/booking 8082:8082 > .logs/booking-port-forward.log 2>&1
-	@start /B kubectl port-forward svc/listing 8083:8083 > .logs/listing-port-forward.log 2>&1
-	@start /B kubectl port-forward svc/tracking 8084:8084 > .logs/tracking-port-forward.log 2>&1
-	@start /B kubectl port-forward svc/user-management 8085:8085 > .logs/user-management-port-forward.log 2>&1
-
-# Stop all kubectl port-forward processes (Windows)
-down-port-forward-all:
-	@echo "Stopping all kubectl port-forward processes..."
-	@taskkill /F /IM kubectl.exe
-
-
-### Kubernetes Port Forwarding for each service
-
-# Port forward for Eureka service
-port-forward-eureka:
-	kubectl port-forward svc/eureka 8761:8761
-
-# Port forward for Database service (MySQL)
-port-forward-database:
-	kubectl port-forward svc/database 3306:3306
-
-# Port forward for Authentification service
-port-forward-authentification:
-	kubectl port-forward svc/authentification 8081:8081
-
-# Port forward for Booking service
-port-forward-booking:
-	kubectl port-forward svc/booking 8082:8082
-
-# Port forward for Listing service
-port-forward-listing:
-	kubectl port-forward svc/listing 8083:8083
-
-# Port forward for Tracking service
-port-forward-tracking:
-	kubectl port-forward svc/tracking 8084:8084
-
-# Port forward for User Management service
-port-forward-user-management:
-	kubectl port-forward svc/user-management 8085:8085
-
-
-### SIMULATE to see if HPA is working or not
-
-# stress:
-# 	@echo Running both CPU and memory stress on the authentification service...
-# 	@for /f "delims=" %%b in ('kubectl get pods -l app=authentification -o jsonpath="{.items[0].metadata.name}"') do (
-# 		echo Simulating CPU load on service authentification (pod %%b)
-# 		kubectl exec -it %%b -- dd if=/dev/zero of=/dev/null bs=1M count=1000
-# 		echo Simulating Memory load on service authentification (pod %%b)
-# 		kubectl exec -it %%b -- dd if=/dev/zero of=/dev/shm/bigfile bs=1M count=1024
-# 	)
+# Default target
+.DEFAULT_GOAL := help

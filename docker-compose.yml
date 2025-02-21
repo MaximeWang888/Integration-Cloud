@@ -1,36 +1,79 @@
+version: '3.8'
+
 services:
-  eureka:
+  api-gateway:
     build:
-      context: ./microservice-eureka
+      context: ./api-gateway
       dockerfile: Dockerfile
     ports:
-      - "8761:8761"
+      - "80:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - database
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
-      - infra
       - all
 
   database:
     build:
-      context: database
+      context: ./database
       dockerfile: Dockerfile
     ports:
       - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_DATABASE=microservice_db
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=password
+    volumes:
+      - db_data:/var/lib/mysql
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "user", "--password=password"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
-      - infra
       - all
 
   authentification:
     build:
       context: ./microservice-authentification
       dockerfile: Dockerfile
-    ports:
-      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - database
+      - api-gateway
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
       - microservice
       - all
@@ -39,10 +82,23 @@ services:
     build:
       context: ./microservice-booking
       dockerfile: Dockerfile
-    ports:
-      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - database
+      - api-gateway
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
       - microservice
       - all
@@ -51,10 +107,23 @@ services:
     build:
       context: ./microservice-listing
       dockerfile: Dockerfile
-    ports:
-      - "8083:8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - database
+      - api-gateway
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
       - microservice
       - all
@@ -63,10 +132,23 @@ services:
     build:
       context: ./microservice-tracking
       dockerfile: Dockerfile
-    ports:
-      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - database
+      - api-gateway
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
       - microservice
       - all
@@ -75,10 +157,23 @@ services:
     build:
       context: ./microservice-user_management
       dockerfile: Dockerfile
-    ports:
-      - "8085:8085"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - JAVA_OPTS=-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0
+    depends_on:
+      - database
+      - api-gateway
     networks:
       - microservice_network
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          memory: 512M
     profiles:
       - microservice
       - all
@@ -86,3 +181,6 @@ services:
 networks:
   microservice_network:
     driver: bridge
+
+volumes:
+  db_data:
