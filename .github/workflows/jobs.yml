@@ -111,16 +111,16 @@ jobs:
       # 6. Deploy API Gateway and Database
       - name: Deploy API Gateway and Database
         run: |
-          kubectl apply -n development -f k8s-manifests/database-deployment.yaml
-          kubectl apply -n development -f k8s-manifests/api-gateway-deployment.yaml
+          kubectl apply -n development -f kubernetes/database-deployment.yaml
+          kubectl apply -n development -f kubernetes/api-gateway-deployment.yaml
 
       - name: Deploy Internal Services (ClusterIP)
         run: |
-          kubectl apply -n development -f k8s-manifests/authentification-deployment.yaml
-          kubectl apply -n development -f k8s-manifests/booking-deployment.yaml
-          kubectl apply -n development -f k8s-manifests/listing-deployment.yaml
-          kubectl apply -n development -f k8s-manifests/tracking-deployment.yaml
-          kubectl apply -n development -f k8s-manifests/user_management-deployment.yaml
+          kubectl apply -n development -f kubernetes/authentification-deployment.yaml
+          kubectl apply -n development -f kubernetes/booking-deployment.yaml
+          kubectl apply -n development -f kubernetes/listing-deployment.yaml
+          kubectl apply -n development -f kubernetes/tracking-deployment.yaml
+          kubectl apply -n development -f kubernetes/user_management-deployment.yaml
 
       - name: Wait for Services to be Ready
         run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
@@ -177,13 +177,13 @@ jobs:
 
       - name: Deploy Services to Production
         run: |
-          kubectl apply -n production -f k8s-manifests/database-deployment.yaml
-          kubectl apply -n production -f k8s-manifests/api-gateway-deployment.yaml
-          kubectl apply -n production -f k8s-manifests/authentification-deployment.yaml
-          kubectl apply -n production -f k8s-manifests/booking-deployment.yaml
-          kubectl apply -n production -f k8s-manifests/listing-deployment.yaml
-          kubectl apply -n production -f k8s-manifests/tracking-deployment.yaml
-          kubectl apply -n production -f k8s-manifests/user_management-deployment.yaml
+          kubectl apply -n production -f kubernetes/database-deployment.yaml
+          kubectl apply -n production -f kubernetes/api-gateway-deployment.yaml
+          kubectl apply -n production -f kubernetes/authentification-deployment.yaml
+          kubectl apply -n production -f kubernetes/booking-deployment.yaml
+          kubectl apply -n production -f kubernetes/listing-deployment.yaml
+          kubectl apply -n production -f kubernetes/tracking-deployment.yaml
+          kubectl apply -n production -f kubernetes/user_management-deployment.yaml
 
       - name: Wait for Services to be Ready (Production)
         run: kubectl wait --namespace production --for=condition=ready pod --all --timeout=120s
