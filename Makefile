@@ -41,13 +41,13 @@ dc-ps:
 k8s-apply-all:
 	@echo "$(BLUE)Applying all Kubernetes resources in namespace $(NAMESPACE)...$(RESET)"
 	$(KUBECTL) create namespace $(NAMESPACE) --dry-run=client -o yaml | $(KUBECTL) apply -f -
-	$(KUBECTL) apply -f kubernetes/api-gateway-deployment.yml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/database-deployment.yml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/authentification-deployment.yml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/booking-deployment.yml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/listing-deployment.yml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/tracking-deployment.yml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/user_management-deployment.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/database-deployment.yaml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/authentification-deployment.yaml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/booking-deployment.yaml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/listing-deployment.yaml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/tracking-deployment.yaml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/user_management-deployment.yaml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/ingress.yml -n $(NAMESPACE)
 	@echo "$(GREEN)All resources applied successfully!$(RESET)"
 
 k8s-delete-all:
@@ -72,16 +72,37 @@ k8s-port-forward:
 	@echo "$(BLUE)Setting up port forwarding for API Gateway...$(RESET)"
 	$(KUBECTL) port-forward svc/api-gateway 8080:80 -n $(NAMESPACE)
 
+# Ingress Commands
+.PHONY: ingress-enable ingress-apply ingress-delete
+
+ingress-enable:
+	@echo "$(BLUE)Enabling Ingress Controller...$(RESET)"
+	$(KUBECTL) apply -f kubernetes/ingress-infra.yml
+	@echo "$(GREEN)Ingress Controller enabled!$(RESET)"
+
+ingress-apply:
+	@echo "$(BLUE)Applying Ingress configuration...$(RESET)"
+	$(KUBECTL) apply -f kubernetes/ingress.yml -n $(NAMESPACE)
+	@echo "$(GREEN)Ingress configuration applied!$(RESET)"
+	@echo "$(BLUE)Adding microservice.local to hosts file...$(RESET)"
+	@powershell -Command "Start-Process powershell -Verb RunAs -ArgumentList 'Add-Content -Path \"%WINDIR%\System32\drivers\etc\hosts\" -Value \"`n127.0.0.1 microservice.local`\" -Force'"
+	@echo "$(GREEN)Host configuration completed!$(RESET)"
+
+ingress-delete:
+	@echo "$(RED)Deleting Ingress configuration...$(RESET)"
+	$(KUBECTL) delete -f kubernetes/ingress.yml -n $(NAMESPACE) --ignore-not-found
+	@echo "$(GREEN)Ingress configuration deleted!$(RESET)"
+
 # Development Commands
 .PHONY: dev prod clean
 
 dev: export NAMESPACE=development
-dev: k8s-apply-all
+dev: k8s-apply-all ingress-enable ingress-apply
 
 prod: export NAMESPACE=production
-prod: k8s-apply-all
+prod: k8s-apply-all ingress-enable ingress-apply
 
-clean:
+clean: ingress-delete
 	@echo "$(RED)Cleaning up all resources...$(RESET)"
 	-$(MAKE) dc-down
 	-$(MAKE) k8s-delete-all NAMESPACE=development

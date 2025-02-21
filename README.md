@@ -141,6 +141,68 @@ Chaque service est configuré avec :
 - Healthchecks automatiques
 - Redémarrage automatique en cas d'échec
 
+## Configuration Ingress
+
+L'application utilise Nginx Ingress Controller pour gérer le routage du trafic entrant.
+
+### Configuration locale
+
+1. Activer l'Ingress Controller :
+```bash
+make ingress-enable
+```
+
+2. Appliquer la configuration Ingress :
+```bash
+make ingress-apply
+```
+
+3. Ajouter l'entrée DNS locale (nécessite les droits sudo) :
+```bash
+echo "127.0.0.1 microservice.local" | sudo tee -a /etc/hosts
+```
+
+### Accès aux services
+
+Une fois configuré, les services sont accessibles via :
+
+- Authentication : `http://microservice.local/api/auth/**`
+- Booking : `http://microservice.local/api/bookings/**`
+- Listing : `http://microservice.local/api/listings/**`
+- Tracking : `http://microservice.local/api/tracking/**`
+- User Management : `http://microservice.local/api/users/**`
+
+### Vérification
+
+Pour vérifier que l'Ingress fonctionne :
+
+```bash
+# Vérifier le statut de l'Ingress
+kubectl get ingress -n development
+
+# Tester un endpoint
+curl -H "Host: microservice.local" http://localhost/api/auth/ping
+```
+
+### Dépannage Ingress
+
+Si l'Ingress ne fonctionne pas :
+
+1. Vérifier que l'Ingress Controller est actif :
+```bash
+kubectl get pods -n ingress-nginx
+```
+
+2. Vérifier les logs de l'Ingress Controller :
+```bash
+kubectl logs -n ingress-nginx deployment/ingress-nginx-controller
+```
+
+3. Vérifier la configuration :
+```bash
+kubectl describe ingress microservice-ingress -n development
+```
+
 # Guide de démarrage local
 
 ## Étapes de lancement

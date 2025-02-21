@@ -1,0 +1,14 @@
+# Supprimer la configuration Eureka
+#eureka:
+#  client:
+#    serviceUrl:
+#      defaultZone: http://localhost:8761/eureka/
+
+# Ajouter la configuration pour Kubernetes
+spring:
+  cloud:
+    kubernetes:
+      discovery:
+        enabled: true
+      config:
+        enabled: true 

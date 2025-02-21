@@ -38,9 +38,3 @@ server:
 #   instance:
 #     prefer-ip-address: true
 #     instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
-
-logging:
-  level:
-    org.springframework.cloud.client.loadbalancer: DEBUG
-    org.springframework.cloud.netflix.eureka: DEBUG
-    org.springframework.cloud.openfeign: DEBUG

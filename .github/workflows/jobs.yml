@@ -90,6 +90,11 @@ jobs:
           minikube start --driver=docker
           kubectl get nodes
 
+      - name: Enable Ingress
+        run: |
+          minikube addons enable ingress
+          kubectl get pods -n ingress-nginx -w --timeout=300s
+
       - name: Create namespaces
         run: kubectl create namespace development || true
 
@@ -108,38 +113,33 @@ jobs:
           docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-tracking:latest
           docker pull ${{ secrets.DOCKER_USERNAME }}/microservice-airbnb-user_management:latest
 
-      # 6. Deploy API Gateway and Database
-      - name: Deploy API Gateway and Database
+      # 6. Deploy Services
+      - name: Deploy Services
         run: |
           kubectl apply -n development -f kubernetes/database-deployment.yaml
-          kubectl apply -n development -f kubernetes/api-gateway-deployment.yaml
-
-      - name: Deploy Internal Services (ClusterIP)
-        run: |
           kubectl apply -n development -f kubernetes/authentification-deployment.yaml
           kubectl apply -n development -f kubernetes/booking-deployment.yaml
           kubectl apply -n development -f kubernetes/listing-deployment.yaml
           kubectl apply -n development -f kubernetes/tracking-deployment.yaml
           kubectl apply -n development -f kubernetes/user_management-deployment.yaml
+          kubectl apply -n development -f kubernetes/ingress.yml
 
-      - name: Wait for Services to be Ready
-        run: kubectl wait --namespace development --for=condition=ready pod --all --timeout=120s
-
-      - name: Expose API Gateway with LoadBalancer
-        run: |
-          kubectl expose deployment api-gateway --namespace=development --type=LoadBalancer --name=api-gateway-service --port=80 --target-port=8080
-
-      - name: Test Services through API Gateway
+      - name: Test Services through Ingress
         run: |
           MINIKUBE_IP=$(minikube ip)
-          API_GATEWAY_PORT=$(kubectl get svc api-gateway-service -n development -o jsonpath='{.spec.ports[0].port}')
           
-          # Test endpoints through API Gateway
-          curl http://$MINIKUBE_IP:$API_GATEWAY_PORT/api/auth/ping
-          curl http://$MINIKUBE_IP:$API_GATEWAY_PORT/api/bookings/ping
-          curl http://$MINIKUBE_IP:$API_GATEWAY_PORT/api/listings/ping
-          curl http://$MINIKUBE_IP:$API_GATEWAY_PORT/api/tracking/ping
-          curl http://$MINIKUBE_IP:$API_GATEWAY_PORT/api/users/ping
+          # Wait for Ingress to be ready
+          kubectl wait --namespace ingress-nginx \
+            --for=condition=ready pod \
+            --selector=app.kubernetes.io/component=controller \
+            --timeout=180s
+
+          # Test endpoints through Ingress
+          curl -H "Host: microservice.local" http://$MINIKUBE_IP/api/auth/ping
+          curl -H "Host: microservice.local" http://$MINIKUBE_IP/api/bookings/ping
+          curl -H "Host: microservice.local" http://$MINIKUBE_IP/api/listings/ping
+          curl -H "Host: microservice.local" http://$MINIKUBE_IP/api/tracking/ping
+          curl -H "Host: microservice.local" http://$MINIKUBE_IP/api/users/ping
 
   deploy-production:
     runs-on: ubuntu-22.04
