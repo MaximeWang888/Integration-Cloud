@@ -45,7 +45,6 @@ spec:
     - protocol: TCP
       port: 8084
       targetPort: 8084
-      nodePort: 30004
   type: ClusterIP
 ---
 # apiVersion: autoscaling/v2
