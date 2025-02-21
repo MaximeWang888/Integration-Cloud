@@ -9,12 +9,13 @@
     <name>microservice-parent</name>
 
     <modules>
+        <module>api-gateway</module>
+        <module>database</module>
         <module>microservice-authentification</module>
-        <module>microservice-user_management</module>
         <module>microservice-booking</module>
-        <module>microservice-tracking</module>
         <module>microservice-listing</module>
-        <module>microservice-eureka</module>
+        <module>microservice-tracking</module>
+        <module>microservice-user_management</module>
     </modules>
 
     <properties>
@@ -47,6 +48,10 @@
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-kubernetes-all</artifactId>
             <version>1.1.10.RELEASE</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-kubernetes</artifactId>
         </dependency>
     </dependencies>
 
