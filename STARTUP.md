@@ -44,14 +44,24 @@ make k8s-status
 kubectl get svc istio-ingressgateway -n istio-system
 ```
 
-### 6. Tester les endpoints
+### 6. Ouvrir un terminal administrateur
+```bash
+notepad C:\Windows\System32\drivers\etc\hosts
+
+# Ajouter cette ligne dedans (seulement)
+127.0.0.1 microservice.local
+
+# Sauvegarde et ferme le fichier
+```
+
+### 7. Tester les endpoints
 ```bash
 # Configurer le port forwarding pour le Gateway Istio
 make k8s-port-forward
 
 # Dans un autre terminal, tester les services
-curl -H "Host: microservice.local" http://localhost:8080/api/auth/ping
-curl -H "Host: microservice.local" http://localhost:8080/api/bookings/ping
+curl -H "Host: microservice.local" http://microservice.local:8080/api/auth/ping
+curl -H "Host: microservice.local" http://microservice.local:8080/api/bookings/ping
 ```
 
 ## Arrêt de l'application
@@ -59,3 +69,6 @@ curl -H "Host: microservice.local" http://localhost:8080/api/bookings/ping
 # Nettoyer toutes les ressources
 make clean
 ``` 
+
+## Pour setup le DNS microservice.local
+
