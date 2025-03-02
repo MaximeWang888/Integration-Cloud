@@ -1,4 +1,4 @@
-# Guide de démarrage local avec Docker Desktop Kubernetes
+# Guide de démarrage local avec Docker Desktop et Kubernetes
 
 ## Prérequis
 1. Docker Desktop installé et démarré
@@ -20,13 +20,10 @@ cd <votre-repo>
 make dc-build PROFILE=all
 ```
 
-### 3. Activer Ingress sur Docker Desktop
+### 3. Construire les images Docker spécifiques
 ```bash
-# Installer l'Ingress Controller
-kubectl apply -f kubernetes/ingress-infra.yml
-
-# Vérifier que l'Ingress Controller est bien démarré
-kubectl get pods -n ingress-nginx
+# Construction des images pour les services spécifiques
+make dc-build-specific SERVICES="authentification booking database"
 ```
 
 ### 4. Déployer les services
@@ -38,22 +35,30 @@ make dev
 kubectl get pods -n development
 ```
 
-### 5. Configurer l'accès local
+### 5. Vérifier le déploiement
+```bash
+# Vérifier l'état global des services
+make k8s-status
+
+# Obtenir l'adresse IP du Gateway Istio
+kubectl get svc istio-ingressgateway -n istio-system
+```
+
+### 6. Configurer l'accès local
 ```powershell
 # Ajouter l'entrée DNS locale (exécuter PowerShell en tant qu'administrateur)
 Add-Content -Path "$env:windir\System32\drivers\etc\hosts" -Value "`n127.0.0.1 microservice.local" -Force
 ```
 
-### 6. Tester les endpoints
+### 7. Tester les endpoints
 ```bash
-# Test du service d'authentification
-curl -H "Host: microservice.local" http://localhost/api/auth/ping
+# Configurer le port forwarding pour le Gateway Istio
+make k8s-port-forward
 
-# Test du service de réservation
-curl -H "Host: microservice.local" http://localhost/api/bookings/ping
-
-# Test du service de listing
-curl -H "Host: microservice.local" http://localhost/api/listings/ping
+# Dans un autre terminal, tester les services
+curl -H "Host: microservice.local" http://localhost:8080/api/auth/ping
+curl -H "Host: microservice.local" http://localhost:8080/api/bookings/ping
+curl -H "Host: microservice.local" http://localhost:8080/api/listings/ping
 ```
 
 ## Résolution des problèmes courants
@@ -70,32 +75,29 @@ kubectl describe pod -n development <nom-du-pod>
 kubectl logs -n development <nom-du-pod>
 ```
 
-### Si l'Ingress ne fonctionne pas
+### Si Istio ne fonctionne pas
 ```bash
-# Vérifier l'état de l'Ingress
-kubectl get ingress -n development
+# Vérifier l'état du Gateway Istio
+kubectl get pods -n istio-system
 
-# Vérifier la configuration détaillée
-kubectl describe ingress -n development
+# Vérifier les logs du Gateway
+kubectl logs -n istio-system -l app=istio-ingressgateway
+```
 
-# Vérifier les logs de l'Ingress Controller
-kubectl logs -n ingress-nginx -l app.kubernetes.io/component=controller
+## Commandes utiles
+```bash
+# Voir tous les services
+make k8s-status
+
+# Voir les logs d'un service spécifique
+make k8s-logs service=<nom-du-service>
+
+# Port forwarding pour accès local
+make k8s-port-forward
 ```
 
 ## Arrêt de l'application
 ```bash
 # Nettoyer toutes les ressources
 make clean
-```
-
-## Commandes utiles
-```bash
-# Voir tous les services
-kubectl get services -A
-
-# Voir tous les pods dans tous les namespaces
-kubectl get pods -A
-
-# Voir les événements en temps réel
-kubectl get events -n development --watch
 ``` 

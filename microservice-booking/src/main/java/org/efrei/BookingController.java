@@ -8,7 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/bookings")
+@RequestMapping("/api/bookings")
 @FeignClient(name = "authentification")
 public class BookingController {
     @Autowired

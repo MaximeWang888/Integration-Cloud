@@ -43,8 +43,8 @@ spec:
     app: tracking-service
   ports:
     - protocol: TCP
-      port: 8084
-      targetPort: 8084
+      port: 80          # port du service
+      targetPort: 8084  # port du conteneur
   type: ClusterIP
 ---
 # apiVersion: autoscaling/v2

@@ -11,11 +11,15 @@ RED := \033[1;31m
 RESET := \033[0m
 
 # Docker Compose Commands
-.PHONY: dc-build dc-up dc-down dc-logs dc-ps
+.PHONY: dc-build dc-up dc-down dc-logs dc-ps dc-build-specific
 
 dc-build:
 	@echo "$(BLUE)Building Docker images with profile $(PROFILE)...$(RESET)"
 	$(DOCKER_COMPOSE) --profile $(PROFILE) build
+
+dc-build-specific:
+	@echo "$(BLUE)Building Docker images for specific services: $(SERVICES)...$(RESET)"
+	$(DOCKER_COMPOSE) build $(SERVICES)
 
 dc-up:
 	@echo "$(BLUE)Starting services with profile $(PROFILE)...$(RESET)"
@@ -36,18 +40,40 @@ dc-ps:
 	$(DOCKER_COMPOSE) ps
 
 # Kubernetes Commands
-.PHONY: k8s-apply-all k8s-delete-all k8s-status k8s-logs k8s-port-forward
+.PHONY: k8s-apply-all k8s-delete-all k8s-status k8s-logs k8s-port-forward setup-istio clean-istio
 
-k8s-apply-all:
+setup-istio:
+	@echo "$(BLUE)Installing Istio with Helm...$(RESET)"
+	helm repo add istio https://istio-release.storage.googleapis.com/charts
+	helm repo update
+	kubectl create namespace istio-system --dry-run=client -o yaml | kubectl apply -f -
+	-helm install istio-base istio/base -n istio-system --set enableCRDTemplates=true || true
+	-helm install istiod istio/istiod -n istio-system --wait || true
+	-helm install istio-ingress istio/gateway -n istio-system || true
+	@echo "Waiting for Istio to be ready..."
+	kubectl wait --for=condition=ready pod --all -n istio-system --timeout=300s
+	kubectl label namespace $(NAMESPACE) istio-injection=enabled --overwrite
+	@echo "$(GREEN)Istio installed successfully!$(RESET)"
+		
+	@echo "$(BLUE)Applying Istio Gateway configuration...$(RESET)"
+	helm upgrade --install istio-gateway ./istio-gateway --namespace $(NAMESPACE) --set namespace=$(NAMESPACE)
+	@echo "$(GREEN)Istio Gateway applied successfully!$(RESET)"
+
+clean-istio:
+	@echo "$(BLUE)Cleaning up Istio...$(RESET)"
+	-helm uninstall istio-ingress -n istio-system
+	-helm uninstall istiod -n istio-system
+	-helm uninstall istio-base -n istio-system
+	-kubectl delete namespace istio-system --ignore-not-found
+	@echo "$(GREEN)Istio cleaned up successfully!$(RESET)"
+
+k8s-apply-all: setup-istio
 	@echo "$(BLUE)Applying all Kubernetes resources in namespace $(NAMESPACE)...$(RESET)"
 	$(KUBECTL) create namespace $(NAMESPACE) --dry-run=client -o yaml | $(KUBECTL) apply -f -
 	$(KUBECTL) apply -f kubernetes/database-deployment.yaml -n $(NAMESPACE)
 	$(KUBECTL) apply -f kubernetes/authentification-deployment.yaml -n $(NAMESPACE)
 	$(KUBECTL) apply -f kubernetes/booking-deployment.yaml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/listing-deployment.yaml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/tracking-deployment.yaml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/user_management-deployment.yaml -n $(NAMESPACE)
-	$(KUBECTL) apply -f kubernetes/ingress.yml -n $(NAMESPACE)
+	$(KUBECTL) apply -f kubernetes/istio-gateway.yaml -n $(NAMESPACE)
 	@echo "$(GREEN)All resources applied successfully!$(RESET)"
 
 k8s-delete-all:
@@ -63,38 +89,21 @@ k8s-status:
 	$(KUBECTL) get svc -n $(NAMESPACE)
 	@echo "\nDeployments:"
 	$(KUBECTL) get deployments -n $(NAMESPACE)
+	@echo "\nIstio Gateway:"
+	$(KUBECTL) get gateway -n $(NAMESPACE)
+	@echo "\nVirtual Services:"
+	$(KUBECTL) get virtualservices -n $(NAMESPACE)
 
 k8s-logs:
 	@echo "$(BLUE)Fetching logs for service $(service)...$(RESET)"
 	$(KUBECTL) logs -f deployment/$(service) -n $(NAMESPACE)
 
 k8s-port-forward:
-	@echo "$(BLUE)Setting up port forwarding for API Gateway...$(RESET)"
-	$(KUBECTL) port-forward svc/api-gateway 8080:80 -n $(NAMESPACE)
-
-# Ingress Commands
-.PHONY: ingress-enable ingress-apply ingress-delete
-
-ingress-enable:
-	@echo "$(BLUE)Enabling Ingress Controller...$(RESET)"
-	$(KUBECTL) apply -f kubernetes/ingress-infra.yml
-	@echo "$(GREEN)Ingress Controller enabled!$(RESET)"
-
-ingress-apply:
-	@echo "$(BLUE)Applying Ingress configuration...$(RESET)"
-	$(KUBECTL) apply -f kubernetes/ingress.yml -n $(NAMESPACE)
-	@echo "$(GREEN)Ingress configuration applied!$(RESET)"
-	@echo "$(BLUE)Adding microservice.local to hosts file...$(RESET)"
-	@powershell -Command "Start-Process powershell -Verb RunAs -ArgumentList 'Add-Content -Path \"%WINDIR%\System32\drivers\etc\hosts\" -Value \"`n127.0.0.1 microservice.local`\" -Force'"
-	@echo "$(GREEN)Host configuration completed!$(RESET)"
-
-ingress-delete:
-	@echo "$(RED)Deleting Ingress configuration...$(RESET)"
-	$(KUBECTL) delete -f kubernetes/ingress.yml -n $(NAMESPACE) --ignore-not-found
-	@echo "$(GREEN)Ingress configuration deleted!$(RESET)"
+	@echo "$(BLUE)Setting up port forwarding for Istio Gateway...$(RESET)"
+	kubectl port-forward -n istio-system svc/istio-ingress 8080:80
 
 # Development Commands
-.PHONY: dev prod clean ingress-setup deploy-env
+.PHONY: dev prod clean
 
 # Détection du système d'exploitation
 ifeq ($(OS),Windows_NT)
@@ -117,47 +126,19 @@ check-cluster:
 create-namespace:
 	$(KUBECTL) create namespace $(NAMESPACE) --dry-run=client -o yaml --validate=false | $(KUBECTL) apply -f - --validate=false
 
-# Nettoyage des Ingress existants
-clean-ingress:
-	-$(KUBECTL) delete -f kubernetes/ingress-infra.yml --ignore-not-found
-	-$(KUBECTL) delete namespace ingress-nginx --ignore-not-found
-	$(call SLEEP,10)
-
-# Installation du contrôleur Nginx Ingress
-ingress-setup:
-	$(KUBECTL) apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
-	echo "Attente du démarrage du contrôleur Ingress..."
-	$(call SLEEP,30)
-
-# Attendre que le contrôleur Ingress soit prêt
-wait-ingress:
-	echo "Vérification du statut du contrôleur Ingress..."
-	$(KUBECTL) wait --namespace ingress-nginx \
-		--for=condition=ready pod \
-		--selector=app.kubernetes.io/component=controller \
-		--timeout=120s || (echo "Erreur: Le contrôleur Ingress n'est pas prêt. Vérifiez avec 'kubectl get pods -n ingress-nginx'" && exit 1)
-
 # Déploiement des applications
 deploy-apps:
 	$(KUBECTL) apply -f kubernetes/database-deployment.yaml --validate=false
 	$(call SLEEP,5)
 	$(KUBECTL) apply -f kubernetes/authentification-deployment.yaml --validate=false
-	$(KUBECTL) apply -f kubernetes/user_management-deployment.yaml --validate=false
 	$(KUBECTL) apply -f kubernetes/booking-deployment.yaml --validate=false
-	$(KUBECTL) apply -f kubernetes/listing-deployment.yaml --validate=false
-	$(KUBECTL) apply -f kubernetes/tracking-deployment.yaml --validate=false
-	$(call SLEEP,10)
-	$(KUBECTL) apply -f kubernetes/ingress.yml --validate=false
 
 # Configuration commune pour dev et prod
 deploy-env:
 	$(MAKE) check-cluster && \
 	$(KUBECTL) config set-context --current --namespace=$(NAMESPACE) && \
 	$(MAKE) create-namespace && \
-	$(MAKE) clean-ingress && \
-	$(MAKE) ingress-setup && \
-	$(MAKE) wait-ingress && \
-	$(MAKE) ingress-enable && \
+	$(MAKE) setup-istio && \
 	$(MAKE) deploy-apps
 
 # Développement
@@ -170,21 +151,11 @@ prod:
 
 # Nettoyage
 clean:
-	echo "$(RM_COLOR)Cleaning up resources...$(RM_COLOR)"
+	@echo "$(RED)Cleaning up resources...$(RESET)"
+	$(MAKE) clean-istio
 	-$(KUBECTL) delete namespace development --timeout=60s --ignore-not-found
 	-$(KUBECTL) delete namespace production --timeout=60s --ignore-not-found
-	-$(KUBECTL) delete namespace ingress-nginx --timeout=60s --ignore-not-found
-	echo "Cleanup completed"
-
-# Commandes communes
-k8s-apply-all:
-	$(KUBECTL) apply -f kubernetes/ --validate=false
-
-ingress-enable:
-	$(KUBECTL) apply -f kubernetes/ingress-infra.yml
-
-ingress-apply:
-	$(KUBECTL) apply -f kubernetes/ingress.yml
+	@echo "$(GREEN)Cleanup completed$(RESET)"
 
 # Help
 .PHONY: help
@@ -201,7 +172,7 @@ help:
 	@echo "  k8s-delete-all  - Delete all K8s resources"
 	@echo "  k8s-status      - Show K8s resources status"
 	@echo "  k8s-logs        - Show logs for a service"
-	@echo "  k8s-port-forward- Forward API Gateway port"
+	@echo "  k8s-port-forward- Forward Istio Gateway port"
 	@echo "\n$(GREEN)Environment commands:$(RESET)"
 	@echo "  dev            - Deploy to development"
 	@echo "  prod           - Deploy to production"

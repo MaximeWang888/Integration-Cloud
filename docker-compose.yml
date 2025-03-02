@@ -7,11 +7,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "3306:3306"
-    environment:
-      - MYSQL_ROOT_PASSWORD=password
-      - MYSQL_DATABASE=microservice_db
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
     volumes:
       - db_data:/var/lib/mysql
     networks:

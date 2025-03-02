@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/tracking")
+@RequestMapping("/api/tracking")
 public class TrackingController {
     @Autowired
     private TrackingService trackingService;

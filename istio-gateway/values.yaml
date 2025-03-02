@@ -1,0 +1,36 @@
+namespace: default-namespace
+
+gateway:
+  name: microservices-gateway
+spec:
+  selector:
+    istio: ingress
+  servers:
+    hosts: "*"
+    port:
+      number: 80
+      name: http
+      protocol: HTTP
+
+virtualservices:
+  hosts: "*"
+  auth:
+    host: auth-service
+    port: 8081
+    prefix: /api/auth/
+  booking:
+    host: booking-service
+    port: 8082
+    prefix: /api/bookings/
+  listing:
+    host: listing-service
+    port: 8083
+    prefix: /api/listings/
+  tracking:
+    host: tracking-service
+    port: 8084
+    prefix: /api/tracking/
+  users:
+    host: user-management-service
+    port: 8085
+    prefix: /api/users/

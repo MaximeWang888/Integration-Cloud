@@ -19,23 +19,30 @@ spec:
           ports:
             - containerPort: 3306
           env:
-            - name: DB_USERNAME
+            - name: MYSQL_USER
               valueFrom:
                 secretKeyRef:
-                  name: mysql-credentials
+                  name: mysql-credentials-secret
                   key: username
-            - name: DB_PASSWORD
+            - name: MYSQL_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: mysql-credentials
+                  name: mysql-credentials-secret
+                  key: root_password
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-credentials-secret
                   key: password
-          # resources:
-          #   requests:
-          #     cpu: "200m"         
-          #     memory: "256Mi"     
-          #   limits:
-          #     cpu: "500m"         
-          #     memory: "512Mi" 
+            - name: MYSQL_DATABASE
+              value: "microservice_db"
+          volumeMounts:
+            - name: mysql-persistent-storage
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-persistent-storage
+          persistentVolumeClaim:
+            claimName: mysql-pv-claim
 ---
 apiVersion: v1
 kind: Service
@@ -51,13 +58,25 @@ spec:
   type: ClusterIP
 ---
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pv-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
 kind: Secret
 metadata:
-  name: mysql-credentials
+  name: mysql-credentials-secret
 type: Opaque
 data:
-  username: dXNlcm5hbWU=
-  password: cGFzc3dvcmQ=
+  username: dXNlcg== # user (base64)
+  password: cGFzc3dvcmQ= # password (base64)
+  root_password: cGFzc3dvcmQ= # root password (base64)
 ---
 # apiVersion: autoscaling/v2
 # kind: HorizontalPodAutoscaler

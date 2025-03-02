@@ -43,8 +43,8 @@ spec:
     app: user-management-service
   ports:
     - protocol: TCP
-      port: 8085
-      targetPort: 8085
+      port: 80          # port du service
+      targetPort: 8085  # port du conteneur
   type: ClusterIP 
 ---
 # apiVersion: autoscaling/v2

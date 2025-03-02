@@ -1,0 +1,18 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: auth-service
+spec:
+  hosts:
+    - {{ .Values.hosts }}
+  gateways:
+    - {{ .Values.gateway.name }}
+  http:
+    - match:
+        - uri:
+            prefix: {{ .Values.virtualservices.auth.prefix }}
+      route:
+        - destination:
+            host: {{ printf "%s.%s.svc.cluster.local" .Values.virtualservices.auth.host .Values.namespace }}
+            port:
+              number: {{ .Values.virtualservices.auth.port }}
