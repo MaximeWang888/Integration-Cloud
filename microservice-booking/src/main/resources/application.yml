@@ -43,6 +43,7 @@ management:
       probes:
         enabled: true
 
+authentificationURL: http://auth-service.development.svc.cluster.local:8081
 # eureka:
 #   client:
 #     serviceUrl:

@@ -1,10 +1,10 @@
 CREATE TABLE users
 (
-    id       INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL UNIQUE,
-    password VARCHAR(255) NOT NULL,
-    role     ENUM('LOCATAIRE', 'PROPRIETAIRE', 'INVITE') DEFAULT 'LOCATAIRE',
-    isConnected BOOLEAN DEFAULT FALSE
+    id           INT AUTO_INCREMENT PRIMARY KEY,
+    username     VARCHAR(255) NOT NULL UNIQUE,
+    password     VARCHAR(255) NOT NULL,
+    role         ENUM('LOCATAIRE', 'PROPRIETAIRE', 'INVITE') DEFAULT 'LOCATAIRE',
+    is_connected BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE listings
@@ -50,8 +50,8 @@ CREATE TABLE user_details
     FOREIGN KEY (id) REFERENCES users (id)
 );
 
-INSERT INTO users (username, password, role, isConnected)
-VALUES ('john_doe', 'password123', 'LOCATAIRE', false),
+INSERT INTO users (username, password, role, is_connected)
+VALUES ('john_doe', 'password123', 'LOCATAIRE', true),
        ('jane_smith', 'password123', 'INVITE', false);
 
 INSERT INTO listings (user_id, title, description, price, location, type)

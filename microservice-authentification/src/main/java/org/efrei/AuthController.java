@@ -2,6 +2,8 @@ package org.efrei;
 
 import org.efrei.DAO.UserRepository;
 import org.efrei.entity.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,7 @@ public class AuthController {
 
     @Autowired
     private UserRepository userRepository;
+    Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @PostMapping("/signup")
     public ResponseEntity<User> signup(@RequestBody User user) {
@@ -42,6 +45,7 @@ public class AuthController {
 
     @GetMapping("/checkConnection/{userId}")
     public boolean isUserConnected(@PathVariable Long userId) {
+        logger.info("Successfull pinged !!!");
         return userRepository.findById(userId).get().getIsConnected();
     }
 }

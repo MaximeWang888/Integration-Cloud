@@ -2,10 +2,14 @@ package org.efrei;
 
 import org.efrei.clients.AuthServiceClient;
 import org.efrei.entity.Booking;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -15,6 +19,9 @@ public class BookingController {
     private BookingService bookingService;
     @Autowired
     private AuthServiceClient authClient;
+    @Value("${authentificationURL}")
+    private String authentificationURL;
+    Logger logger = LoggerFactory.getLogger(BookingController.class);
 
     @PostMapping("/new")
     public ResponseEntity<?> createBooking(@RequestParam Long userId, @RequestBody Booking booking) {
@@ -50,8 +57,18 @@ public class BookingController {
     }
 
     @GetMapping("/checkConnection/{userId}")
-    public <userId> Boolean isUserLoggedIn(@PathVariable Long userId) {
-        return authClient.isUserLoggedIn(userId);
+    public Boolean isUserLoggedIn(@PathVariable Long userId) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            String finalURL = authentificationURL + "/api/auth/checkConnection/" + userId;
+            logger.info("URL: " + finalURL);
+            Boolean result = restTemplate.getForObject(finalURL, Boolean.class);
+            logger.info(finalURL + " " + result);
+            return result;
+        } catch (Exception e) {
+            logger.info("Unexpected error while checking user connection for user");
+            return false;
+        }
     }
     
     @GetMapping("/ping")
