@@ -66,7 +66,7 @@ public class BookingController {
             logger.info(finalURL + " " + result);
             return result;
         } catch (Exception e) {
-            logger.info("Unexpected error while checking user connection for user");
+            logger.error("Unexpected error while checking user connection for user " + userId, e);
             return false;
         }
     }
